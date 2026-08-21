@@ -29,6 +29,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    await DataSeeder.InicializarAsync(
+        app.Services,
+        app.Configuration
+    );
 }
 
 app.UseHttpsRedirection();
