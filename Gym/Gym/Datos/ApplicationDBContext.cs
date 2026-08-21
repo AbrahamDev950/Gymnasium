@@ -11,15 +11,22 @@ public class ApplicationDBContext : DbContext
     {
     }
 
-    public DbSet<Administrador> Administradores =>
-        Set<Administrador>();
+    public DbSet<Administrador> Administradores => Set<Administrador>();
+    public DbSet<Socio> Socios => Set<Socio>();
 
+    // Configurar las restricciones de unicidad en el modelo
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
+        
+        // Validar que el NombreUsuario del Administrador sea único
         modelBuilder.Entity<Administrador>()
             .HasIndex(administrador => administrador.NombreUsuario)
+            .IsUnique();
+        
+        // Validar que el Email del Socio sea único
+        modelBuilder.Entity<Socio>()
+            .HasIndex(socio => socio.Email)
             .IsUnique();
     }
 }
