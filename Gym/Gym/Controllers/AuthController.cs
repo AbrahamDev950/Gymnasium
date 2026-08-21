@@ -1,6 +1,8 @@
 using Gym.Datos;
 using Gym.DTOs;
+using Gym.Entidades;
 using Gym.Servicios;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -63,6 +65,17 @@ public class AuthController : ControllerBase
                 administrador.Id,
                 administrador.NombreUsuario
             }
+        });
+    }
+
+    [Authorize(Roles = "Administrador")]
+    [HttpGet("ruta-protegida")]
+    public async Task<IActionResult> RutaProtegida()
+    {
+        return Ok(new
+        {
+            mensaje = "Acceso autorizado al panel de administración.",
+            usuario = User.Identity?.Name
         });
     }
 }
