@@ -16,6 +16,7 @@ public class ApplicationDBContext : DbContext
     public DbSet<Socio> Socios => Set<Socio>();
     public DbSet<Plan> Planes => Set<Plan>();
     public DbSet<Membresia> Membresias => Set<Membresia>();
+    public DbSet<Asistencia> Asistencias => Set<Asistencia>();
 
     // Configurar las restricciones de unicidad en el modelo
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -59,5 +60,12 @@ public class ApplicationDBContext : DbContext
         modelBuilder.Entity<Membresia>()
             .Property(m => m.PrecioAplicado)
             .HasColumnType("decimal(10,2)");
+        
+        // Definir la relación entre Asistencia y Socio, evitando que se elimine un socio si tiene asistencias asociadas
+        modelBuilder.Entity<Asistencia>()
+            .HasOne(a => a.Socio)
+            .WithMany()
+            .HasForeignKey(a => a.SocioId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
