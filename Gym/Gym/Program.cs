@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Conexion a la base de datos
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")
@@ -24,20 +23,18 @@ if (string.IsNullOrWhiteSpace(jwtKey))
         "No se encontró la clave de configuración Jwt:Key."
     );
 }
-/* Issuer lo usamos para identificar quién emite el token
-// Audience para identificar quién es el destinatario del token. 
-// Estos valores deben coincidir con los que se configuran en la aplicación cliente que consume la API.*/
+
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(connectionString));
+
 // Agregar el servicio de TokenService para generar tokens JWT
 builder.Services.AddScoped<TokenService>();
+
 // Configurar la autenticación JWT
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -61,33 +58,35 @@ builder.Services
         };
     });
 
-
-
-
-
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Agregar OpenAPI/Swagger
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     await DataSeeder.InicializarAsync(
         app.Services,
         app.Configuration
     );
 }
 
-
-// Area de middlewares
-
 app.UseHttpsRedirection();
-// Authentication nos permite identificar al usuario que hace la petición
-// mientras que Authorization nos permite determinar si ese usuario tiene
-// permisos para realizar la acción solicitada.
+
+// Configuración de OpenAPI y Swagger (UNA SOLA VEZ)
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Gymnasium API v1");
+    });
+}
+
+// Authentication y Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
