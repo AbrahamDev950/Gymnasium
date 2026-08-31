@@ -38,7 +38,7 @@ function getLoginRequest() {
 
 async function authenticateUser(loginRequest) {
     const response = await fetch(
-        "http://localhost:5005/api/auth/login",
+        "/api/auth/login",
         {
             method: "POST",
             headers: {

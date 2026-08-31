@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gymnasium - Usuarios</title>
+    <link rel="stylesheet" href="users/usersstyles.css">
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>👤 Usuarios</h1>
+            <p>Gestiona a los usuarios de tu gimnasio</p>
+        </div>
+        <div class="header-actions">
+            <button id="refreshBtn" class="btn-refresh">🔄 Actualizar</button>
+        </div>
+    </header>
+
+    <!-- Notificaciones / Mensajes -->
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="successMessage" class="success-message">
+        <span>✓</span>
+        <span>¡Socio registrado correctamente!</span>
+    </div>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard" id="dashboard">
+
+        <!-- Tarjetas de Estadísticas / Menú rápido -->
+        <section class="stats-grid">
+            <button class="stat-card Usuarios-buscar" id="UsuariosTarjetaBuscarBtn">
+                <div class="stat-icon">🏋</div>
+                <div class="stat-content">
+                    <h3>Buscar usuario</h3>
+                </div>
+            </button>
+
+            <button class="stat-card vigentes" id="UsuariosTarjetaVigentesBtn">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3>Membresías Vigentes</h3>
+                </div>
+            </button>
+
+            <button class="stat-card usuario-registro" id="UsuariosTarjetaUsuarioRegistroBtn">
+                <div class="stat-icon">📋</div>
+                <div class="stat-content">
+                    <h3>Registra un nuevo usuario</h3>
+                </div>
+            </button>
+
+            <button class="stat-card usuarios-con-membresia" id="UsuariosTarjetaUsuariosConMembresiaBtn">
+                <div class="stat-icon">💳</div>
+                <div class="stat-content">
+                    <h3>Membresías de usuarios</h3>
+                </div>
+            </button>
+            
+            <button class="stat-card planes" id="UsuariosTarjetaPlanesBtn">
+                <div class="stat-icon">🔱</div>
+                <div class="stat-content">
+                    <h3>Planes de membresía</h3>
+                </div>
+            </button>
+            <button class="stat-card Usuarios" id="UsuariosTarjetaInicioBtn">
+                <div class="stat-icon">🏠</div>
+                <div class="stat-content">
+                    <h3>Inicio</h3>
+                    <p class="stat-value" id="Inicio"></p>
+                </div>
+            </button>
+        </section>
+<!-- ############# FIN SECCION DE TARJETAS DE NAVEGACION ################ -->
+        
+        
+<!-- ---------Sección: Búsqueda y Tabla de Usuarios Vigentes----------- -->
+        
+        <section class="info-usuarios usuarios-buscar" id="buscadorUsuarios" style="display: none;">
+            <form class="buscador" id="buscarForm">
+                <input type="text" id="buscador" placeholder="Buscar por nombre, apellido o correo...">
+                <button id="buscarBtn" type="submit">Buscar</button>
+            </form>
+            <div class="busqueda-info">
+                <p>Busca usuarios por nombre, apellido o correo electrónico.</p>
+            </div>
+            <!-- Tabla HTML estructurada correctamente -->
+            <table id="miembros-totales" style="display: none;">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+                </thead>
+                <tbody id="tablaCuerpo">
+                <!-- Las filas dinámicas se insertarán aquí desde JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Sección: Resumen de Membresías -->
+        <section class="info-usuarios membresias-vigentes" id="infoMembersiasVigentes" style="display: none;">
+            <div class="total-usuarios">
+                <p>Total de membresías vigentes: <span id="totalMembresiasVigentes"></span></p>
+            </div>
+        </section>
+
+        <!-- Sección: Formulario de Registro de Socio -->
+        <section class="info-usuarios" id="infoRegistroNuevo" style="display: none;">
+            <form id="socioForm" class="form-section">
+                <div class="member-stat">
+                    <h2>Nuevo registro</h2>
+
+                    <div class="form-group">
+                        <label for="nombre">Nombre</label>
+                        <input id="nombre" name="nombre" type="text" placeholder="Ingresa el nombre">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apellido">Apellido</label>
+                        <input id="apellido" name="apellido" type="text" placeholder="Ingresa el apellido">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Correo electrónico</label>
+                        <input id="email" name="email" type="email" placeholder="ejemplo@correo.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefono">Teléfono</label>
+                        <input id="telefono" name="telefono" type="text" placeholder="Número telefónico">
+                    </div>
+
+                    <button id="guardarSocioBtn" type="submit">Guardar socio</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Sección: Asignar Membresía y Planes -->
+        <section class="info-usuarios usuarios-con-membresia" id="infoUsuariosConMembresia" style="display: none;">
+            <form id="membresiaForm" class="member-stat">
+                <h2>Asigna una membresía</h2>
+                <div class="form-group">
+                    <input id="planIdM" name="planId" type="number" min="1" placeholder="ID del plan">
+                    <input id="socioIdM" name="socioId" type="number" min="1" placeholder="ID del Usuario">
+                </div>
+                <button id="registrarMembresiaBtn" type="submit">Registrar Membresía</button>
+            </form>
+        </section>
+
+        <section class="info-usuarios planes" id="infoPlanes">
+            <div class="Planes" id="contenedorPlanes">
+                <!-- Las tarjetas se generarán dinámicamente aquí -->
+            </div>
+            <div class="crearPlanForm" id="crearPlanForm" style="display: none;">
+                <h2>Crear Nuevo Plan</h2>
+                <form id="nuevoPlanForm" style="display: block;">
+                    <div class="form-group">
+                        <label for="nombrePlan">Nombre del Plan</label>
+                        <input id="nombrePlan" name="nombrePlan" type="text" placeholder="Nombre del plan" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="duracionPlan">Duración (días)</label>
+                        <input id="duracionPlan" name="duracionPlan" type="number" min="1" placeholder="Duración en días" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="precioPlan">Precio ($)</label>
+                        <input id="precioPlan" name="precioPlan" type="number" min="0.01" step="0.01" placeholder="Precio del plan" required>
+                    </div>
+                    <button type="submit" id="crearPlanBtn">Crear Plan</button>
+                </form>
+            </div>
+            <div class="agregarPlan" id="agregarPlan" style="display: block;">
+                <button id="agregarPlanBtn" class="btn-agregar-plan">Agregar Plan</button>
+            </div>
+        </section>
+
+        <!-- Sección: Registrar Visita -->
+        <section class="registrar-visita-card">
+            <div class="card-header">
+                <h3>Registrar Visita</h3>
+            </div>
+            <div class="form-registro-visita">
+                <form id="visitaForm">
+                    <div class="input-group">
+                        <input id="socioIdVisita" type="text" placeholder="ID del Socio" required>
+                    </div>
+                    <button type="submit" id="registrarVisitaBtn">Registrar Visita</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Última actualización: <span id="lastUpdate">--:--:--</span></p>
+            <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+        </footer>
+
+    </main>
+</div>
+</body>
+<script src="users/users.js" defer></script>
+</html>
