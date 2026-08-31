@@ -71,6 +71,10 @@ artifacts/
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
+# ASP.NET Core AppSettings per environment
+appsettings.Production.json
+
+
 # StyleCop
 StyleCopReport.xml
 
