@@ -50,8 +50,8 @@ Gymnasium es una API REST desarrollada con **ASP.NET Core 10**, **Entity Framewo
 3. **Configurar secretos locales:**
 ```bash
    dotnet user-secrets init
-   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=GymnasiumDevDB;Integrated Security=true;"
-   dotnet user-secrets set "Jwt:Key" "tu-clave-secreta-de-32-caracteres-minimo"
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=GymnasiumDevDB;User Id=sa;Password=TUCONSTRASENA;TrustServerCertificate=True;"
+   dotnet user-secrets set "Jwt:Key" "clave32caracteres"
    dotnet user-secrets set "InitialAdmin:Username" "admin"
    dotnet user-secrets set "InitialAdmin:Password" "admin123"
 ```
