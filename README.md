@@ -81,10 +81,12 @@ Aquí puedes:
 
 1. Usa el endpoint `/api/auth/login` con credenciales:
 ```json
-   {
-     "nombreUsuario": "admin",
-     "contraseña": "admin123"
-   }
+{
+  "email": "admin",
+  "password": "admin123",
+  "twoFactorCode": "string",
+  "twoFactorRecoveryCode": "string"
+}
 ```
 
 2. Copia el token JWT devuelto
@@ -140,8 +142,13 @@ Content-Type: application/json
 **Respuesta:**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "mensaje": "Login exitoso"
+  "token": "ey...",
+  "expirationMinutes": 60,
+  "administrador": {
+    "mensaje": "Credenciales correctas y token generado.",
+    "id": 1,
+    "nombreUsuario": "admin"
+  }
 }
 ```
 
@@ -154,12 +161,19 @@ POST /api/socios
 Authorization: Bearer <TOKEN>
 Content-Type: application/json
 
+**Respuesta:**
+```json
 {
-"nombre": "Juan",
-"apellido": "Pérez",
-"email": "juan@example.com",
-"telefono": "5551234567"
+  "id": 2,
+  "nombre": "Lupita",
+  "apellido": "Diaz",
+  "email": "lupita@example.com",
+  "telefono": "0002136547",
+  "fechaIngreso": "2026-09-10T19:37:51.1797832Z",
+  "activo": true
 }
+```
+
 
 
 **Listar socios:**
@@ -175,11 +189,17 @@ GET /api/socios?activo=true
 POST /api/planes
 Authorization: Bearer <TOKEN>
 
+**Respuesta:**
+```json
 {
-"nombre": "Plan Mensual",
+"id": 1,
+"nombre": "mensual",
 "duracion": 30,
-"precio": 100.00
+"precio": 200,
+"activo": true,
+"fechaCreacion": "2026-09-10T19:43:47.5994276Z"
 }
+```
 ---
 
 ### 4. Membresías
@@ -193,6 +213,24 @@ Authorization: Bearer <TOKEN>
 "socioId": 1,
 "planId": 1
 }
+
+**Respuesta:**
+```json
+{
+"id": 1,
+"socioId": 1,
+"nombreSocio": "Marco Hernandez",
+"planId": 1,
+"nombrePlan": "mensual",
+"fechaInicio": "2026-09-10T19:44:42.5372567Z",
+"fechaVencimiento": "2026-10-10T19:44:42.5372567Z",
+"precioAplicado": 200,
+"estado": "Activa",
+"fechaCreacion": "2026-09-10T19:44:42.5376334Z",
+"diasRestantes": 29
+}
+```
+---
 **Renovar membresía (suma días):**
 
 POST /api/membresias/1/renovar
@@ -202,15 +240,79 @@ Authorization: Bearer <TOKEN>
 "planId": 2
 }
 
+**Respuesta:**
+```json
+{
+  "id": 2,
+  "socioId": 1,
+  "nombreSocio": "Marco Hernandez",
+  "planId": 1,
+  "nombrePlan": "mensual",
+  "fechaInicio": "2026-10-10T19:44:42.5372567",
+  "fechaVencimiento": "2026-11-09T19:44:42.5372567",
+  "precioAplicado": 200,
+  "estado": "Activa",
+  "fechaCreacion": "2026-09-10T19:45:54.2755276Z",
+  "diasRestantes": 59
+}
+```
 
 **Ver membresía vigente de socio:**
 
 GET /api/socios/1/membresia-vigente
 
+***Respuesta***
+```json
+{
+  "id": 3,
+  "socioId": 2,
+  "nombreSocio": "Lupita Diaz",
+  "planId": 1,
+  "nombrePlan": "mensual",
+  "fechaInicio": "2026-09-10T20:22:59.3848152",
+  "fechaVencimiento": "2026-10-10T20:22:59.3848152",
+  "precioAplicado": 200,
+  "estado": "Activa",
+  "fechaCreacion": "2026-09-10T20:22:59.3850965",
+  "diasRestantes": 29
+}
+```
+
 **Ver historial:**
 
 GET /api/socios/1/membresias
 
+***Respuesta***
+```json
+[
+  {
+    "id": 2,
+    "socioId": 1,
+    "nombreSocio": "Marco Hernandez",
+    "planId": 1,
+    "nombrePlan": "mensual",
+    "fechaInicio": "2026-10-10T19:44:42.5372567",
+    "fechaVencimiento": "2026-11-09T19:44:42.5372567",
+    "precioAplicado": 200,
+    "estado": "Activa",
+    "fechaCreacion": "2026-09-10T19:45:54.2755276",
+    "diasRestantes": 59
+  },
+  {
+    "id": 1,
+    "socioId": 1,
+    "nombreSocio": "Marco Hernandez",
+    "planId": 1,
+    "nombrePlan": "mensual",
+    "fechaInicio": "2026-09-10T19:44:42.5372567",
+    "fechaVencimiento": "2026-10-10T19:44:42.5372567",
+    "precioAplicado": 200,
+    "estado": "Activa",
+    "fechaCreacion": "2026-09-10T19:44:42.5376334",
+    "diasRestantes": 29
+  }
+]
+```
 
 ---
 
@@ -225,14 +327,65 @@ Authorization: Bearer <TOKEN>
 "socioId": 1
 }
 
+**Respuesta:**
+```json
+{
+"id": 1,
+"socioId": 1,
+"nombreSocio": "Marco Hernandez",
+"fechaHoraEntrada": "2026-09-10T19:46:58.4682852Z",
+"fechaCreacion": "2026-09-10T19:46:58.4681722Z"
+}
+```
+---
+
 **Ver asistencias del día:**
 
 GET /api/asistencias/dia/hoy
 
+***Respuesta***
+```json
+[
+  {
+    "id": 2,
+    "socioId": 2,
+    "nombreSocio": "Lupita Diaz",
+    "fechaHoraEntrada": "2026-09-10T20:23:10.1989283",
+    "fechaCreacion": "2026-09-10T20:23:10.1986025"
+  },
+  {
+    "id": 1,
+    "socioId": 1,
+    "nombreSocio": "Marco Hernandez",
+    "fechaHoraEntrada": "2026-09-10T19:46:58.4682852",
+    "fechaCreacion": "2026-09-10T19:46:58.4681722"
+  }
+]
+```
 
 **Ver historial de un socio:**
 
 GET /api/asistencias/socio/1
+
+***Respuesta***
+```json
+[
+  {
+    "id": 3,
+    "socioId": 1,
+    "nombreSocio": "Marco Hernandez",
+    "fechaHoraEntrada": "2026-09-10T20:25:42.820245",
+    "fechaCreacion": "2026-09-10T20:25:42.8202444"
+  },
+  {
+    "id": 1,
+    "socioId": 1,
+    "nombreSocio": "Marco Hernandez",
+    "fechaHoraEntrada": "2026-09-10T19:46:58.4682852",
+    "fechaCreacion": "2026-09-10T19:46:58.4681722"
+  }
+]
+```
 
 
 ---
@@ -247,13 +400,13 @@ GET /api/dashboard
 **Respuesta:**
 ```json
 {
-  "asistenciasHoy": 5,
-  "membresíasVigentes": 12,
-  "membresíasProximasAVencer": 3,
-  "sociosActivos": 15,
-  "sociosInactivos": 2,
-  "ingresosDelMes": 5000.00,
-  "fechaConsulta": "2026-08-21T..."
+  "asistenciasHoy": 1,
+  "membresíasVigentes": 2,
+  "membresíasProximasAVencer": 0,
+  "sociosActivos": 2,
+  "sociosInactivos": 0,
+  "ingresosDelMes": 400,
+  "fechaConsulta": "2026-09-10T19:47:27.736972Z"
 }
 ```
 
