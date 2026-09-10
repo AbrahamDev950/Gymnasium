@@ -16,17 +16,16 @@ public class SociosController : ControllerBase
     {
         _context = context;
     }
-    
+
     [HttpPost]
     public async Task<ActionResult> Post(CrearSocioRequest peticionCrearSocio)
     {
-        var emailSanitizado = peticionCrearSocio.Email?.
-            Trim()
+        var emailSanitizado = peticionCrearSocio.Email?.Trim()
             .ToLower();
-        
+
         var emailYaRegistrado = await _context.Socios
             .AnyAsync(socio => socio.Email == emailSanitizado);
-        
+
         if (emailYaRegistrado)
         {
             return Conflict(new { mensaje = "Este correo electrónico ya está registrado." });
@@ -40,10 +39,10 @@ public class SociosController : ControllerBase
             Telefono = peticionCrearSocio.Telefono.Trim(),
             FechaIngreso = DateTime.UtcNow,
         };
-        
+
         _context.Socios.Add(socio);
         await _context.SaveChangesAsync();
-        
+
         var socioDto = new SocioResponse()
         {
             Id = socio.Id,
@@ -54,16 +53,13 @@ public class SociosController : ControllerBase
             FechaIngreso = socio.FechaIngreso,
             Activo = socio.Activo
         };
-        
+
         return CreatedAtAction(
             nameof(ObtenerPorId),
-            new
-            {
-                id = socio.Id,
-                peticionCrearSocio
-            });
+            new { id = socio.Id },
+            socioDto);
     }
-    
+
     [HttpGet("total-registrados")]
     public async Task<ActionResult<IEnumerable<SocioResponse>>> Get()
     {
