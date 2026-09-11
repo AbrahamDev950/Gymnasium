@@ -80,6 +80,39 @@ public class SociosController : ControllerBase
 
         return Ok(socios);
     }
+
+    [HttpGet("buscar")]
+    public async Task<ActionResult<IEnumerable<SocioResponse>>> BuscarSocios([FromQuery] string? termino)
+    {
+        Console.WriteLine($"Conectado a la BD: {_context.Database.GetDbConnection().Database}");
+        Console.WriteLine($"Servidor: {_context.Database.GetDbConnection().DataSource}");
+        if (string.IsNullOrWhiteSpace(termino))
+        {
+            return BadRequest(new { mensaje = "El término de búsqueda no puede estar vacío." });
+        }
+
+        var socios = await _context.Socios
+            .AsNoTracking()
+            .Where(socio => socio.Nombre.Contains(termino) ||
+                            socio.Apellido.Contains(termino) ||
+                            socio.Email.Contains(termino))
+            .OrderBy(socio => socio.Id)
+            .Select(socio => new SocioResponse
+            {
+                Id = socio.Id,
+                Nombre = socio.Nombre,
+                Apellido = socio.Apellido,
+                Email = socio.Email,
+                Telefono = socio.Telefono,
+                FechaIngreso = socio.FechaIngreso,
+                Activo = socio.Activo
+            })
+            .ToListAsync();
+
+        return Ok(socios);
+    }
+
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<IEnumerable<SocioResponse>>> ObtenerPorId(int id)
     {
