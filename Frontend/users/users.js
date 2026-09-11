@@ -182,13 +182,13 @@ async function cargarPlanes() {
                 // Si la etiqueta del botón es "Desactivar", preguntar si desea desactivar
                 if (etiquetaBoton === 'Desactivar' && confirm(`¿Desactivar el plan "${plan.nombre}"?`)) {
                     await desactivarPlan(planId);
-                    await cargarPlanes();
+                    // await cargarPlanes();
                 }
                 // Obtener la etiqueta del botón y preguntar si desea reactivar
                 else if (etiquetaBoton === 'Reactivar' && confirm(`¿Reactivar el plan "${plan.nombre}"?`)) {
                     // Color del boton cambia a verde y se muestra un mensaje de confirmación
                     await reactivarPlan(planId);
-                    await cargarPlanes();
+                    // await cargarPlanes();
                 }
             });
         });
@@ -401,14 +401,14 @@ async function mostrarMembresiasVigentes() {
 }
 
 // Buscar socio por nombre, apellido, correo o teléfono
+// Buscar socio por nombre, apellido, correo o teléfono
 document.getElementById('buscarForm').addEventListener('submit', async function(event) {
     event.preventDefault();
-    
+
     const botonBuscar = document.getElementById('buscarBtn');
 
     if (botonBuscar.disabled) return;
 
-    // Deshabilitar el botón INMEDIATAMENTE
     botonBuscar.disabled = true;
     const textoOriginal = botonBuscar.textContent;
     botonBuscar.textContent = 'Buscando...';
@@ -416,25 +416,39 @@ document.getElementById('buscarForm').addEventListener('submit', async function(
     const query = document.getElementById('buscador').value.trim();
 
     if (!query) {
-        alert('Por favor ingresa un término valido de búsqueda');
-        // Si la validación falla, reactivamos el botón antes de salir
+        alert('Por favor ingresa un término válido de búsqueda');
         botonBuscar.disabled = false;
         botonBuscar.textContent = textoOriginal;
         return;
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/socios/buscar?termino=${encodeURIComponent(query)}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('No hay un token de sesión disponible. Por favor, inicia sesión.');
+            return;
+        }
 
+        const response = await fetch(`${API_URL}/api/socios/buscar?termino=${encodeURIComponent(query)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // Extraer detalles exactos si la respuesta falla
         if (!response.ok) {
-            throw new Error('Error en la búsqueda');
+            let mensajeError = `Error HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                if (errorData && (errorData.mensaje || errorData.message)) {
+                    mensajeError = errorData.mensaje || errorData.message;
+                }
+            } catch (e) {
+                // Si la respuesta no es un objeto JSON legible
+            }
+            throw new Error(mensajeError);
         }
 
         const socios = await response.json();
@@ -442,7 +456,7 @@ document.getElementById('buscarForm').addEventListener('submit', async function(
 
     } catch (error) {
         console.error('Error al buscar:', error);
-        alert('Error al realizar la búsqueda');
+        alert(`No se pudo realizar la búsqueda: ${error.message}`);
     } finally {
         botonBuscar.disabled = false;
         botonBuscar.textContent = textoOriginal;
@@ -549,10 +563,7 @@ async function toggleEstadoSocio(id, estaActivo) {
         boton.textContent = textoOriginal;
     }
 }
-// Actualizar la funcion de membresias vigentes para que se ejecute después de asignar una membresía o cambiar el estado de un socio
-    
-// Función para editar (puedes expandir esto)
+    // Funcion para despues editar a los socios
 function editarSocio(id) {
     alert(`Editar socio ${id}`);
-    // Aquí implementarías la lógica de edición
 }
