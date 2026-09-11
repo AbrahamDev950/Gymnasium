@@ -32,7 +32,7 @@ UsuariosTarjetaUsuariosConMembresiaBtn.addEventListener("click", () => {
 });
 
 UsuariosTarjetaInicioBtn.addEventListener("click", () => {
-    window.location.href = "index.html";
+    window.location.href = "dashboard.html";
 });
 
 UsuariosTarjetaBuscarBtn.addEventListener("click", () => {
@@ -249,7 +249,7 @@ document.getElementById('socioForm').addEventListener('submit', async function(e
     const token = localStorage.getItem('token');
     if (!token) {
         alert('No se encontró token de autenticación. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 
@@ -426,6 +426,7 @@ document.getElementById('buscarForm').addEventListener('submit', async function(
         const token = localStorage.getItem('token');
         if (!token) {
             alert('No hay un token de sesión disponible. Por favor, inicia sesión.');
+            window.location.href = 'index.html';
             return;
         }
 
@@ -567,3 +568,17 @@ async function toggleEstadoSocio(id, estaActivo) {
 function editarSocio(id) {
     alert(`Editar socio ${id}`);
 }
+
+
+function verificarAutenticacionEstricta() {
+    const token = getAuthToken();
+    if (!token) {
+        window.location.replace('index.html');
+    }
+}
+window.addEventListener('pageshow', () => {
+    verificarAutenticacionEstricta();
+});
+
+// --- Inicialización ---
+verificarAutenticacionEstricta();
