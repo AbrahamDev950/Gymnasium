@@ -19,7 +19,7 @@ async function handleLoginSubmit(event) {
         // guardar token en localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.role);
-        window.location.href ="index.html";
+        window.location.href ="dashboard.html";
         
     } catch (error) {
         showError(error.message);
@@ -55,7 +55,10 @@ async function authenticateUser(loginRequest) {
     if (!response.ok) {
         throw new Error("No fue posible iniciar sesión.");
     }
-
+    
+    // Depurar que sirva el token recibido
+    console.log("✅ Usuario autenticado correctamente");
+    console.log("El token recibido es:", await response.clone().json());
     return await response.json();
 }
 

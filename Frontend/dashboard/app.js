@@ -44,7 +44,7 @@ function getAuthToken() {
 function verificarAutenticacionEstricta() {
     const token = getAuthToken();
     if (!token) {
-        window.location.replace('login.html');
+        window.location.replace('index.html');
     }
 }
 
@@ -52,7 +52,7 @@ function logOut() {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('nombreUsuario');
-    window.location.replace('login.html');
+    window.location.replace('index.html');
 }
 
 // --- Control de Interfaz ---
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = getAuthToken();
     if (!token) {
         console.error('❌ No hay token de autenticación');
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 

@@ -1,86 +1,55 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gymnasium - Dashboard</title>
-    <link rel="stylesheet" href="dashboard/styles.css">
+
+    <title>Gym Management System</title>
+
+    <link
+            href="https://fonts.googleapis.com/css2?family=Greaty&display=swap"
+            rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="login/css/loginStyles.css">
 </head>
+
 <body>
-<div class="container">
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <h1>💪 Gym Perruno </h1>
-            <p>Sistema de Gestión de Gimnasio</p>
-        </div>
-        <div class="header-actions">
-            <button id="refreshBtn" class="btn-refresh">🔄 Actualizar</button>
-        </div>
-    </header>
+<main class="container">
 
-    <!-- Loading indicator -->
-    <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Cargando datos...</p>
-    </div>
+    <section id="loginSection" class="sub-container">
+        <form id="loginForm">
 
-    <!-- Error message -->
-    <div id="error" class="error" style="display: none;"></div>
+            <label for="nombreUsuario">Nombre Usuario:</label>
+            <input
+                    type="text"
+                    id="nombreUsuario"
+                    name="nombreUsuario"
+                    required
+            >
 
-    <!-- Dashboard content -->
-    <main class="dashboard" id="dashboard" style="display: none;">
-        <!-- Stats grid -->
-        <section class="stats-grid">
-            <div class="stat-card asistencias">
-                <div class="stat-icon">📍</div>
-                <div class="stat-content">
-                    <h3>Asistencias Hoy</h3>
-                    <p class="stat-value" id="asistenciasHoy">0</p>
-                </div>
-            </div>
+            <label for="password">Password:</label>
+            <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+            >
 
-            <div class="stat-card vigentes">
-                <div class="stat-icon">✅</div>
-                <div class="stat-content">
-                    <h3>Membresías Vigentes</h3>
-                    <p class="stat-value" id="membresíasVigentes">0</p>
-                </div>
-            </div>
+            <button type="submit">Log In</button>
 
-            <div class="stat-card proximas">
-                <div class="stat-icon">⏰</div>
-                <div class="stat-content">
-                    <h3>Próximas a Vencer (7 días)</h3>
-                    <p class="stat-value" id="membresíasProximasAVencer">0</p>
-                </div>
-            </div>
+            <p id="message"></p>
+        </form>
+    </section>
 
-            <div class="stat-card ingresos">
-                <div class="stat-icon">💰</div>
-                <div class="stat-content">
-                    <h3>Ingresos del Mes</h3>
-                    <p class="stat-value" id="ingresosDelMes">$0.00</p>
-                </div>
-            </div>
-            <button class="stat-card Usuarios" id="UsuariosTarjetaBtn">
-                <div class="stat-icon" >👤</div>
-                <div class="stat-content">
-                    <h3>Usuarios</h3>
-                    <p class="stat-value" id="Usuarios"></p>
-                </div>
-            </button>
-        </section>
-      
-            
+    <section id="dashboardSection" class="sub-container" hidden>
+        <h2 id="welcomeMessage">Welcome</h2>
+        <p id="roleMessage"></p>
+    </section>
 
-        <!-- Last updated -->
-        <footer class="footer">
-            <p>Última actualización: <span id="lastUpdate">--:--:--</span></p>
-            <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
-        </footer>
-    </main>
-</div>
-<script src="dashboard/app.js"></script>
+</main>
+
+<script src="login/js/login.js"></script>
+
 </body>
 </html>

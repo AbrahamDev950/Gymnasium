@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gymnasium - Dashboard</title>
+    <link rel="stylesheet" href="dashboard/styles.css">
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>💪 Gym Perruno </h1>
+            <p>Sistema de Gestión de Gimnasio</p>
+        </div>
+        <div class="header-actions">
+            <button id="refreshBtn" class="btn-refresh">🔄 Actualizar</button>
+        </div>
+    </header>
+
+    <!-- Loading indicator -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Cargando datos...</p>
+    </div>
+
+    <!-- Error message -->
+    <div id="error" class="error" style="display: none;"></div>
+
+    <!-- Dashboard content -->
+    <main class="dashboard" id="dashboard" style="display: none;">
+        <!-- Stats grid -->
+        <section class="stats-grid">
+            <div class="stat-card asistencias">
+                <div class="stat-icon">📍</div>
+                <div class="stat-content">
+                    <h3>Asistencias Hoy</h3>
+                    <p class="stat-value" id="asistenciasHoy">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card vigentes">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3>Membresías Vigentes</h3>
+                    <p class="stat-value" id="membresíasVigentes">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card proximas">
+                <div class="stat-icon">⏰</div>
+                <div class="stat-content">
+                    <h3>Próximas a Vencer (7 días)</h3>
+                    <p class="stat-value" id="membresíasProximasAVencer">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card ingresos">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <h3>Ingresos del Mes</h3>
+                    <p class="stat-value" id="ingresosDelMes">$0.00</p>
+                </div>
+            </div>
+            <button class="stat-card Usuarios" id="UsuariosTarjetaBtn">
+                <div class="stat-icon" >👤</div>
+                <div class="stat-content">
+                    <h3>Usuarios</h3>
+                    <p class="stat-value" id="Usuarios"></p>
+                </div>
+            </button>
+        </section>
+      
+            
+
+        <!-- Last updated -->
+        <footer class="footer">
+            <p>Última actualización: <span id="lastUpdate">--:--:--</span></p>
+            <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+        </footer>
+    </main>
+</div>
+<script src="dashboard/app.js"></script>
+</body>
+</html>

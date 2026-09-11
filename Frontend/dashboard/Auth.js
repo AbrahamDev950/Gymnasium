@@ -34,7 +34,7 @@ async function fetchWithAuth(endpoint, options = {}) {
     if (!token || token === 'undefined' || token === 'null') {
         console.error('❌ No hay token disponible. Redirigiendo a login...');
         localStorage.clear();
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return null;
     }
 
@@ -61,7 +61,7 @@ async function fetchWithAuth(endpoint, options = {}) {
         if (response.status === 401 || response.status === 403) {
             console.error('❌ Token no válido o expirado');
             localStorage.clear();
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
             return null;
         }
 
@@ -86,7 +86,7 @@ function logout() {
     localStorage.removeItem('role');
     localStorage.removeItem('user');
     sessionStorage.clear();
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
 }
 
 /**
@@ -94,7 +94,7 @@ function logout() {
  */
 function verifySession() {
     if (!isTokenValid()) {
-        console.warn('⚠️ Sesión inválida. Redirigiendo a login...');
+        console.warn('⚠️ Sesión inválida. Redirigiendo a index...');
         logout();
     }
 }
