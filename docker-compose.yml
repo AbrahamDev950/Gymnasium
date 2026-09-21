@@ -1,0 +1,44 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: gymnasium-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      MSSQL_PID: Express
+    ports:
+      - "1435:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - gymnasium-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gymnasium-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT}"
+      ConnectionStrings__DefaultConnection: "${ConnectionStrings__DefaultConnection}"
+      Jwt__Key: "${Jwt__Key}"
+      Jwt__Issuer: "${Jwt__Issuer}"
+      Jwt__Audience: "${Jwt__Audience}"
+      InitialAdmin__Username: "${InitialAdmin__Username}"
+      InitialAdmin__Password: "${InitialAdmin__Password}"
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    depends_on:
+      sqlserver:
+        condition: service_started
+    networks:
+      - gymnasium-network
+    restart: unless-stopped
+
+networks:
+  gymnasium-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data:

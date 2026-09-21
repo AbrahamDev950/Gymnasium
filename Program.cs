@@ -106,6 +106,12 @@ builder.Services.AddCors(options =>
 // ################### INICIO DEL PIPELINE DE LA APLICACIÓN ###################
 var app = builder.Build();
 
+// Aplicar migraciones automáticamente
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+    db.Database.Migrate();
+}
 // Usamos archivos estáticos para servir el frontend
 app.UseDefaultFiles(new DefaultFilesOptions
 {
@@ -145,7 +151,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
+{
+    // En Docker, solo usar HTTP
+    builder.WebHost.UseUrls("http://+:5000");
+}
 app.UseAuthentication();
 app.UseAuthorization();
 

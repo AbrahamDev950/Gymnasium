@@ -73,7 +73,7 @@ ScaffoldingReadMe.txt
 
 # ASP.NET Core AppSettings per environment
 appsettings.Production.json
-
+appsettings.Development.json
 
 # StyleCop
 StyleCopReport.xml
@@ -484,3 +484,4 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+.env
