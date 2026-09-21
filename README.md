@@ -42,33 +42,47 @@ Gymnasium es una API REST desarrollada con **ASP.NET Core 10**, **Entity Framewo
    cd Gymnasium
 ```
 
-2. **Restaurar dependencias:**
+2. **Crear archivo .env:**
 ```bash
-   dotnet restore
+    #Crear un arhivo .env en la raíz del proyecto
+    touch .env
+    # Edita el archivo .env y configura con tus datos
+    nano .env
+    
+    #Por ejemplo:
+# SQL Server Configuration
+MSSQL_SA_PASSWORD=123456789MIContrasenaSegura
+ASPNETCORE_ENVIRONMENT=Production
+
+# Connection String
+ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=Gymnasium;User Id=sa;Password=TUPASSWORD;TrustServerCertificate=True
+
+# JWT Configuration
+Jwt__Key=MisuperClavede32CaracteresParaGymnasium123456789ParaPruebaPiloto
+Jwt__Issuer=https://localhost:5001
+Jwt__Audience=https://localhost:5001
+
+# Initial Admin User
+InitialAdmin__Username=admin
+InitialAdmin__Password=admin123
+
 ```
 
-3. **Configurar secretos locales:**
+ 3. **Ejecutar el contenedor con Docker:**
 ```bash
-   dotnet user-secrets init
-   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=GymnasiumDevDB;User Id=sa;Password=TUCONSTRASENA;TrustServerCertificate=True;"
-   dotnet user-secrets set "Jwt:Key" "clave32caracteres"
-   dotnet user-secrets set "InitialAdmin:Username" "admin"
-   dotnet user-secrets set "InitialAdmin:Password" "admin123"
+   # Si estas como usuario principal, puedes ejecutar directamente:
+   sudo docker-compose up --build
 ```
 
-4. **Crear/actualizar base de datos:**
+ 4. **Abre la aplicación:**
 ```bash
-   dotnet ef database update
-```
-
-5. **Ejecutar aplicación:**
-```bash
-   dotnet run
+   # La API estará disponible en el puerto 5005: http://localhost:5005
+   http://localhost:5005
 ```
 
 
 ---
-Utilizar el puerto asignado como por ejemplo: https://localhost:5001
+
 Una vez ejecutada la aplicación, accede a **Swagger UI**:
 
 
@@ -96,8 +110,9 @@ Aquí puedes:
 ---
 
 ## Estructura del Proyecto
+```JSON
 Gym/
-├── Controllers/ # Endpoints REST
+├── Controllers/ 
 │ ├── AuthController.cs
 │ ├── SociosController.cs
 │ ├── PlanesController.cs
@@ -107,20 +122,21 @@ Gym/
 ├── Datos/ # Acceso a datos
 │ ├── ApplicationDBContext.cs
 │ └── DataSeeder.cs
-├── DTOs/ # Data Transfer Objects
-├── Entidades/ # Modelos de negocio
+├── DTOs/ 
+├── Entidades/
 │ ├── Administrador.cs
 │ ├── Socio.cs
 │ ├── Plan.cs
 │ ├── Membresia.cs
 │ └── Asistencia.cs
-├── Servicios/ # Lógica de negocios
+├── Servicios/ 
 │ └── TokenService.cs
 ├── Migrations/ # EF Core migrations
 ├── Program.cs
 ├── appsettings.json
 └── Gym.csproj
-
+└── Dockerfile
+```
 
 ---
 

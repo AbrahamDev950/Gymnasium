@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+namespace Gym.Controllers;
+
 [ApiController]
 [Route("api/socios")]
 [Authorize(Roles = "Administrador")]
@@ -93,9 +95,9 @@ public class SociosController : ControllerBase
 
         var socios = await _context.Socios
             .AsNoTracking()
-            .Where(socio => socio.Nombre.Contains(termino) ||
-                            socio.Apellido.Contains(termino) ||
-                            socio.Email.Contains(termino))
+            .Where(socio => socio.Email != null && (socio.Nombre.Contains(termino) ||
+                                                    socio.Apellido.Contains(termino) ||
+                                                    socio.Email.Contains(termino)))
             .OrderBy(socio => socio.Id)
             .Select(socio => new SocioResponse
             {
