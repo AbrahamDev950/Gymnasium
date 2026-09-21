@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Gym.Entidades;
-
+/// <summary>
+/// Entidad que representa a un administrador del sistema.
+/// </summary>
 public class Administrador
 {
     public int Id { get; set; }

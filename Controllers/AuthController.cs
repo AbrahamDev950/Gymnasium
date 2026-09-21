@@ -54,6 +54,7 @@ public class AuthController : ControllerBase
             });
         }
         
+        // Si los datos son correctos generamos el token JWT
         var token = tokenService.GenerarToken(administrador);
         return Ok(new
         {
@@ -65,17 +66,6 @@ public class AuthController : ControllerBase
                 administrador.Id,
                 administrador.NombreUsuario
             }
-        });
-    }
-
-    [Authorize(Roles = "Administrador")]
-    [HttpGet("ruta-protegida")]
-    public async Task<IActionResult> RutaProtegida()
-    {
-        return Ok(new
-        {
-            mensaje = "Acceso autorizado al panel de administración.",
-            usuario = User.Identity?.Name
         });
     }
 }

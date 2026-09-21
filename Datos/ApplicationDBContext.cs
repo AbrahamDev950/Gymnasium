@@ -12,13 +12,16 @@ public class ApplicationDBContext : DbContext
     {
     }
 
+    /// <summary>
+    /// Dbset para representar a las entidades en la base de datos.
+    /// </summary>
     public DbSet<Administrador> Administradores => Set<Administrador>();
     public DbSet<Socio> Socios => Set<Socio>();
     public DbSet<Plan> Planes => Set<Plan>();
     public DbSet<Membresia> Membresias => Set<Membresia>();
     public DbSet<Asistencia> Asistencias => Set<Asistencia>();
 
-    // Configurar las restricciones de unicidad en el modelo
+    // Configurar las restricciones
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

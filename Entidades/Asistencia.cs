@@ -2,6 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Gym.Entidades;
 
+/// <summary>
+/// Entidad que representa la asistencia de un socio al gimnasio.
+/// </summary>
 public class Asistencia
 {
     public int Id { get; set; }

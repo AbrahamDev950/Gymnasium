@@ -3,9 +3,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Datos;
-
+/// <summary>
+/// Clase que se encarga de inicializar los datos en la base de datos.
+/// </summary>
 public static class DataSeeder
 {
+    /// <summary>
+    /// Inicializa los datos en la base de datos, creando un administrador inicial si no existe.
+    /// Los datos del administrador inicial se obtienen de la configuración de la aplicación.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    /// <exception cref="InvalidOperationException"></exception>
     public static async Task InicializarAsync(
         IServiceProvider services,
         IConfiguration configuration)
