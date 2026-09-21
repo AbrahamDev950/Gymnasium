@@ -26,15 +26,18 @@ if (string.IsNullOrWhiteSpace(jwtKey))
     );
 }
 
+// Validamos nuestro token JWT, para ello necesitamos el issuer y el audience que definimos en appsettings.json
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-// Add services to the container.
+
+// ------------------ INICIO AREA DE SERVICIOS ------------------
 builder.Services.AddControllers();
+// Agregamos el servicio de ApplicationDBContext con la cadena de conexión
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Agregar el servicio de TokenService para generar tokens JWT
+// Servicio de TokenService para generar tokens JWT
 builder.Services.AddScoped<TokenService>();
 
 // Configurar la autenticación JWT
@@ -48,14 +51,15 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-
+            
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
 
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtKey)
             ),
-
+            
+            // No dar margen de tiempo para la expiración del token
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -65,6 +69,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerGen(options =>
 {
+    // Configurar Swagger para usar JWT Bearer Authentication
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -94,6 +99,11 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+
+// ------------------ FIN AREA DE SERVICIOS ------------------
+
+
+// ################### INICIO DEL PIPELINE DE LA APLICACIÓN ###################
 var app = builder.Build();
 
 // Usamos archivos estáticos para servir el frontend
@@ -111,14 +121,13 @@ app.UseStaticFiles(new StaticFileOptions
     )
 });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    await DataSeeder.InicializarAsync(
-        app.Services,
-        app.Configuration
-    );
-}
+// Esperamos a que se inicialicen los datos en la base de datos,
+// Creando un administrador inicial si no existe.
+await DataSeeder.InicializarAsync(
+    app.Services,
+    app.Configuration
+);
+
 
 // app.UseHttpsRedirection();
 
@@ -136,7 +145,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Authentication y Authorization
+
 app.UseAuthentication();
 app.UseAuthorization();
 
