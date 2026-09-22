@@ -1,44 +1,46 @@
-// auth-utils.js - Funciones centralizadas para autenticación
+// auth-utils.js
+// Funciones centralizadas para autenticación
 
 const API_URL = '/api';
 
 /**
- * Obtiene el token del localStorage
- * @returns {string|null} Token o null si no existe
+ * Obtiene el token almacenado.
+ * @returns {string|null}
  */
 function getToken() {
     const token = localStorage.getItem('token');
-    console.log('🔑 Token recuperado:', token ? `${token.substring(0, 20)}...` : 'No existe');
+
+    if (!token || token === 'undefined' || token === 'null') {
+        return null;
+    }
+
     return token;
 }
 
 /**
- * Verifica si el token existe y es válido
+ * Verifica si existe un token válido en localStorage.
  * @returns {boolean}
  */
 function isTokenValid() {
-    const token = getToken();
-    return token && token.length > 0 && token !== 'undefined' && token !== 'null';
+    return !!getToken();
 }
 
 /**
- * Realiza un fetch con autenticación automática
- * @param {string} endpoint - Ruta de la API (ej: '/socios')
- * @param {object} options - Opciones del fetch
- * @returns {Promise<Response>}
+ * Realiza una petición HTTP autenticada.
+ *
+ * @param {string} endpoint - Ruta de la API, por ejemplo "/socios"
+ * @param {object} options - Opciones de fetch
+ * @returns {Promise<Response|null>}
  */
 async function fetchWithAuth(endpoint, options = {}) {
     const token = getToken();
 
-    // Verificar si el token existe
-    if (!token || token === 'undefined' || token === 'null') {
-        console.error('❌ No hay token disponible. Redirigiendo a login...');
-        localStorage.clear();
-        window.location.href = 'index.html';
+    // No existe token
+    if (!token) {
+        logout();
         return null;
     }
 
-    // Configurar headers con autenticación
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
@@ -46,60 +48,60 @@ async function fetchWithAuth(endpoint, options = {}) {
     };
 
     try {
-        console.log(`📤 Requesting: ${API_URL}${endpoint}`);
-        console.log('📋 Headers:', {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token.substring(0, 20)}...`
-        });
-
         const response = await fetch(`${API_URL}${endpoint}`, {
             ...options,
             headers
         });
 
-        // Si el token expiró o no es válido
+        // Token inválido o expirado
         if (response.status === 401 || response.status === 403) {
-            console.error('❌ Token no válido o expirado');
-            localStorage.clear();
-            window.location.href = 'index.html';
+            console.warn('Sesión expirada o no autorizada.');
+            logout();
             return null;
         }
 
+        // Otros errores HTTP
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.mensaje || `HTTP ${response.status}: ${response.statusText}`);
+
+            throw new Error(
+                errorData.mensaje ||
+                `HTTP ${response.status}: ${response.statusText}`
+            );
         }
 
         return response;
+
     } catch (error) {
-        console.error('❌ Error en fetchWithAuth:', error);
+        console.error('Error en la petición:', error);
         throw error;
     }
 }
 
 /**
- * Hacer logout seguro
+ * Cierra la sesión.
  */
 function logout() {
-    console.log('🚪 Realizando logout...');
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('user');
+    localStorage.removeItem('nombreUsuario');
+
     sessionStorage.clear();
+
     window.location.href = 'index.html';
 }
 
 /**
- * Verificar sesión al cargar la página
+ * Verifica que exista una sesión activa.
  */
 function verifySession() {
     if (!isTokenValid()) {
-        console.warn('⚠️ Sesión inválida. Redirigiendo a index...');
         logout();
     }
 }
 
-// Exportar para uso en otros archivos
+// Exponer funciones globalmente
 window.AuthUtils = {
     getToken,
     isTokenValid,

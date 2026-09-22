@@ -9,9 +9,8 @@ const buscadorUsuarios = document.getElementById("buscadorUsuarios");
 const infoMembersiasVigentes = document.getElementById("infoMembersiasVigentes");
 const infoPlanes = document.getElementById("infoPlanes");
 const infoRegistroNuevo = document.getElementById("infoRegistroNuevo");
-const totalMembresiasVigentes = document.getElementById("totalMembresiasVigentes");
 
-const API_URL = '';
+const API_URL_S = '';
 
 // ----------------   Event Listeners para las tarjetas de navegación ---------------
 mostrarMembresiasVigentes();
@@ -108,7 +107,7 @@ async function crearNuevoPlan() {
     nuevoPlanForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        const response = await fetch(`${API_URL}/api/planes`, {
+        const response = await fetch(`${API_URL_S}/api/planes`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -142,7 +141,7 @@ async function cargarPlanes() {
         } else {
             infoPlanes.style.display = 'none';
         }
-        const response = await fetch(`${API_URL}/api/planes`);
+        const response = await fetch(`${API_URL_S}/api/planes`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -201,7 +200,7 @@ async function cargarPlanes() {
 }
 async function reactivarPlan(planId) {
     try {
-        const response = await fetch(`${API_URL}/api/planes/${planId}/reactivar`, {
+        const response = await fetch(`${API_URL_S}/api/planes/${planId}/reactivar`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -223,7 +222,7 @@ async function reactivarPlan(planId) {
 }
 async function desactivarPlan(planId) {
     try {
-        const response = await fetch(`${API_URL}/api/planes/${planId}/desactivar`, {
+        const response = await fetch(`${API_URL_S}/api/planes/${planId}/desactivar`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -263,7 +262,7 @@ document.getElementById('socioForm').addEventListener('submit', async function(e
     console.log("Socio DTO a enviar:", crearSocioDto);
 
     try {
-        const response = await fetch(`${API_URL}/api/socios`, {
+        const response = await fetch(`${API_URL_S}/api/socios`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -313,7 +312,7 @@ document.getElementById('membresiaForm').addEventListener('submit', async functi
     console.log("Asignar Membresía DTO a enviar:", asignarMembresiaDto);
 
     try {
-        const response = await fetch(`${API_URL}/api/membresias`, {
+        const response = await fetch(`${API_URL_S}/api/membresias`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -341,18 +340,15 @@ document.getElementById('membresiaForm').addEventListener('submit', async functi
 // Registrar visita de socio
 document.getElementById('visitaForm').addEventListener('submit', async function(event) {
     event.preventDefault();
-    // [Route("api/asistencias")]
     const socioId = parseInt(document.getElementById('socioIdVisita').value.trim(), 10);
     
-    // Crear el objeto DTO para registrar la visita
+    // Crear el objeto DTO AsistenciaRequest para registrar la visita
     const registrarVisitaDto = {
         socioId: socioId
     };
-
-    console.log("Registrar Visita DTO a enviar:", registrarVisitaDto);
-
+    
     try {
-        const response = await fetch(`${API_URL}/api/asistencias`, {
+        const response = await fetch(`${API_URL_S}/api/asistencias`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -366,11 +362,9 @@ document.getElementById('visitaForm').addEventListener('submit', async function(
         }
 
         const data = await response.json();
-        console.log('Visita registrada:', data);
         alert('Visita registrada con éxito');
         document.getElementById('visitaForm').reset();
     } catch (error) {
-        console.error('Error al registrar la visita:', error);
         alert(`Error al registrar la visita, revise que el ID del socio sea correcto y que tenga una membresía vigente.`);
     }
 });
@@ -378,7 +372,7 @@ document.getElementById('visitaForm').addEventListener('submit', async function(
 // Mostrar las membresías vigentes en la tarjeta correspondiente en totalMembresiasVigentes
 async function mostrarMembresiasVigentes() {
     try {
-        const response = await fetch(`${API_URL}/api/membresias/totales/vigentes`, {
+        const response = await fetch(`${API_URL_S}/api/dashboard`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -389,9 +383,8 @@ async function mostrarMembresiasVigentes() {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         const data = await response.json();
-        console.log('Membresías vigentes:', data);
         // Parsear el total de membresías vigentes y mostrarlo en el DOM
-        const total = parseInt(data.total, 10);
+        const total = parseInt(data.membresíasVigentes ?? 0, 10);
         // Mostrar el total de membresías vigentes en el DOM
         document.getElementById('totalMembresiasVigentes').textContent = total;
         // console.log ('Total de membresías vigentes:', data.totalMembresiasVigentes);
@@ -400,8 +393,7 @@ async function mostrarMembresiasVigentes() {
     }
 }
 
-// Buscar socio por nombre, apellido, correo o teléfono
-// Buscar socio por nombre, apellido, correo o teléfono
+// Buscar socio por nombre, apellido o correo 
 document.getElementById('buscarForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -430,7 +422,7 @@ document.getElementById('buscarForm').addEventListener('submit', async function(
             return;
         }
 
-        const response = await fetch(`${API_URL}/api/socios/buscar?termino=${encodeURIComponent(query)}`, {
+        const response = await fetch(`${API_URL_S}/api/socios/buscar?termino=${encodeURIComponent(query)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -530,7 +522,7 @@ async function toggleEstadoSocio(id, estaActivo) {
         boton.style.cursor = 'not-allowed';
         const textoOriginal = boton.textContent;
         boton.textContent = 'Procesando...';
-        const response = await fetch(`${API_URL}/api/socios/${id}/${endpoint}`, {
+        const response = await fetch(`${API_URL_S}/api/socios/${id}/${endpoint}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -571,14 +563,10 @@ function editarSocio(id) {
 
 
 function verificarAutenticacionEstricta() {
-    const token = getAuthToken();
-    if (!token) {
-        window.location.replace('index.html');
-    }
+    AuthUtils.verifySession();
 }
 window.addEventListener('pageshow', () => {
     verificarAutenticacionEstricta();
 });
 
-// --- Inicialización ---
 verificarAutenticacionEstricta();
