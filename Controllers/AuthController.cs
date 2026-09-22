@@ -4,7 +4,6 @@ using Gym.Entidades;
 using Gym.Servicios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,7 +27,7 @@ public class AuthController : ControllerBase
     {
         var administrador = await context.Administradores
             .SingleOrDefaultAsync(administrador =>
-                administrador.NombreUsuario == request.Email);
+                administrador.NombreUsuario == request.NombreUsuario);
 
         if (administrador is null)
         {

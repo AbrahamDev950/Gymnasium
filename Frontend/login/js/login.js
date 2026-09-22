@@ -1,21 +1,22 @@
+// ------------------------- Referencias al DOM --------------------------------------------------------
 const form = document.getElementById("loginForm");
 const message = document.getElementById("message");
-const loginSection = document.getElementById("loginSection");
-const dashboardSection = document.getElementById("dashboardSection");
-const welcomeMessage = document.getElementById("welcomeMessage");
-const roleMessage = document.getElementById("roleMessage");
-
+// ------------------- Event listener para el evento de envío del formulario ---------------------------
 form.addEventListener("submit", handleLoginSubmit);
 
+
+// ----------------------- Funciones ---------------------------
+
+// Función para manejar el envío del formulario de inicio de sesión
 async function handleLoginSubmit(event) {
     event.preventDefault();
 
     clearMessage();
-
-    const loginRequest = getLoginRequest();
+    // Obtener los datos del formulario y crear el objeto LoginRequest
+    const LoginRequest = getLoginRequest();
 
     try {
-        const data = await authenticateUser(loginRequest);
+        const data = await authenticateUser(LoginRequest);
         // guardar token en localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.role);
@@ -26,17 +27,19 @@ async function handleLoginSubmit(event) {
     }
 }
 
+// Función para obtener los datos del formulario y crear el objeto LoginRequest
 function getLoginRequest() {
     const nombreUsuario = document.getElementById("nombreUsuario").value.trim();
     const password = document.getElementById("password").value;
 
     return {
-        email: nombreUsuario,
+        nombreUsuario,
         password
     };
 }
 
-async function authenticateUser(loginRequest) {
+// Función para autenticar al usuario usando
+async function authenticateUser(LoginRequest) {
     const response = await fetch(
         "/api/auth/login",
         {
@@ -44,7 +47,7 @@ async function authenticateUser(loginRequest) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(loginRequest)
+            body: JSON.stringify(LoginRequest)
         }
     );
 
@@ -56,17 +59,15 @@ async function authenticateUser(loginRequest) {
         throw new Error("No fue posible iniciar sesión.");
     }
     
-    // Depurar que sirva el token recibido
-    console.log("✅ Usuario autenticado correctamente");
-    console.log("El token recibido es:", await response.clone().json());
     return await response.json();
 }
 
-
+// Función para mostrar un mensaje de error en el DOM
 function showError(errorMessage) {
     message.textContent = errorMessage;
 }
 
+// Función para limpiar el mensaje de error en el DOM
 function clearMessage() {
     message.textContent = "";
 }
