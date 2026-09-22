@@ -1,11 +1,11 @@
 # Gymnasium - API REST de Gestión de Gimnasio
 
-Gymnasium es una API REST desarrollada con **ASP.NET Core 10**, **Entity Framework Core** y **SQL Server**. El proyecto sirve como aprendizaje y portafolio, implementando conceptos profesionales como autenticación JWT, relaciones de entidades, baja lógica y validaciones de negocio.
+Gymnasium es una API REST desarrollada con **ASP.NET Core 10**, **Entity Framework Core** y **SQL Server**. El proyecto sirve como aprendizaje y portafolio, implementando conceptos profesionales como autenticación JWT, relaciones de entidades y validaciones de negocio.
 
 ## Características
 
 ✅ **Autenticación JWT** con rol `Administrador`  
-✅ **CRUD de Socios** - Gestión de miembros con baja lógica  
+✅ **CRUD de Socios** - Gestión de miembros  
 ✅ **CRUD de Planes** - Catálogo de membresías  
 ✅ **CRUD de Membresías** - Suscripciones con historial y renovación  
 ✅ **Registro de Asistencias** - Control de entrada validando estado y membresía vigente  
@@ -23,6 +23,7 @@ Gymnasium es una API REST desarrollada con **ASP.NET Core 10**, **Entity Framewo
 - **Documentación:** Swagger/OpenAPI
 - **Lenguaje:** C#
 - **Control de versiones:** Git
+- **Contenedores:** Docker
 
 ---
 
@@ -30,10 +31,9 @@ Gymnasium es una API REST desarrollada con **ASP.NET Core 10**, **Entity Framewo
 
 ### Requisitos
 
-- .NET 10 SDK
-- SQL Server (local o remoto)
-- Git
-
+ -Docker instalado (Descargar Docker Desktop)
+ 
+ -Docker Compose (incluido en Docker Desktop)
 ### Pasos
 
 1. **Clonar repositorio:**
@@ -50,21 +50,22 @@ Gymnasium es una API REST desarrollada con **ASP.NET Core 10**, **Entity Framewo
     nano .env
     
     #Por ejemplo:
-# SQL Server Configuration
-MSSQL_SA_PASSWORD=123456789MIContrasenaSegura
-ASPNETCORE_ENVIRONMENT=Production
+    
+    # SQL Server Configuration
+    MSSQL_SA_PASSWORD=123456789MIContrasenaSegura
+    ASPNETCORE_ENVIRONMENT=Production
 
-# Connection String
-ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=Gymnasium;User Id=sa;Password=TUPASSWORD;TrustServerCertificate=True
+    # Connection String
+    ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=Gymnasium;User Id=sa;Password=TUPASSWORD;TrustServerCertificate=True
 
-# JWT Configuration
-Jwt__Key=MisuperClavede32CaracteresParaGymnasium123456789ParaPruebaPiloto
-Jwt__Issuer=https://localhost:5001
-Jwt__Audience=https://localhost:5001
-
-# Initial Admin User
-InitialAdmin__Username=admin
-InitialAdmin__Password=admin123
+    # JWT Configuration
+    Jwt__Key=MisuperClavede32CaracteresParaGymnasium123456789ParaPruebaPiloto
+    Jwt__Issuer=https://localhost:5001
+    Jwt__Audience=https://localhost:5001
+    
+    # Initial Admin User
+    InitialAdmin__Username=admin
+    InitialAdmin__Password=admin123
 
 ```
 
@@ -77,7 +78,7 @@ InitialAdmin__Password=admin123
  4. **Abre la aplicación:**
 ```bash
    # La API estará disponible en el puerto 5005: http://localhost:5005
-   http://localhost:5005
+   http://localhost:5000
 ```
 
 
@@ -110,7 +111,7 @@ Aquí puedes:
 ---
 
 ## Estructura del Proyecto
-```JSON
+```
 Gym/
 ├── Controllers/ 
 │ ├── AuthController.cs
@@ -119,7 +120,7 @@ Gym/
 │ ├── MembresíasController.cs
 │ ├── AsistenciasController.cs
 │ └── DashboardController.cs
-├── Datos/ # Acceso a datos
+├── Datos/
 │ ├── ApplicationDBContext.cs
 │ └── DataSeeder.cs
 ├── DTOs/ 
@@ -129,13 +130,18 @@ Gym/
 │ ├── Plan.cs
 │ ├── Membresia.cs
 │ └── Asistencia.cs
-├── Servicios/ 
+├── Services/ 
 │ └── TokenService.cs
 ├── Migrations/ # EF Core migrations
+├── Frontend/
+│ ├── Dashboard
+│ ├── Index
+│ └──  Users
 ├── Program.cs
 ├── appsettings.json
 └── Gym.csproj
 └── Dockerfile
+
 ```
 
 ---
@@ -145,15 +151,16 @@ Gym/
 ### 1. Autenticación (Administrador)
 
 **Login:**
-
+```
 POST /api/auth/login
+
 Content-Type: application/json
 
 {
-"nombreUsuario": "admin",
-"contraseña": "admin123"
+  "nombreUsuario": "admin",
+  "contraseña": "admin123"
 }
-
+```
 
 **Respuesta:**
 ```json
@@ -173,6 +180,7 @@ Content-Type: application/json
 ### 2. Socios
 
 **Crear socio:**
+
 POST /api/socios
 Authorization: Bearer <TOKEN>
 Content-Type: application/json
@@ -190,10 +198,12 @@ Content-Type: application/json
 }
 ```
 
-
+---
 
 **Listar socios:**
+
 GET /api/socios
+
 GET /api/socios?activo=true
 
 
@@ -203,6 +213,7 @@ GET /api/socios?activo=true
 **Crear plan:**
 
 POST /api/planes
+
 Authorization: Bearer <TOKEN>
 
 **Respuesta:**
@@ -221,7 +232,7 @@ Authorization: Bearer <TOKEN>
 ### 4. Membresías
 
 **Crear membresía:**
-
+```
 POST /api/membresias
 Authorization: Bearer <TOKEN>
 
@@ -229,6 +240,7 @@ Authorization: Bearer <TOKEN>
 "socioId": 1,
 "planId": 1
 }
+```
 
 **Respuesta:**
 ```json
@@ -248,14 +260,14 @@ Authorization: Bearer <TOKEN>
 ```
 ---
 **Renovar membresía (suma días):**
-
+```
 POST /api/membresias/1/renovar
 Authorization: Bearer <TOKEN>
 
 {
 "planId": 2
 }
-
+```
 **Respuesta:**
 ```json
 {
@@ -272,7 +284,7 @@ Authorization: Bearer <TOKEN>
   "diasRestantes": 59
 }
 ```
-
+---
 **Ver membresía vigente de socio:**
 
 GET /api/socios/1/membresia-vigente
@@ -293,7 +305,7 @@ GET /api/socios/1/membresia-vigente
   "diasRestantes": 29
 }
 ```
-
+---
 **Ver historial:**
 
 GET /api/socios/1/membresias
@@ -335,14 +347,14 @@ GET /api/socios/1/membresias
 ### 5. Asistencias
 
 **Registrar entrada:**
-
+```
 POST /api/asistencias
 Authorization: Bearer <TOKEN>
 
 {
 "socioId": 1
 }
-
+```
 **Respuesta:**
 ```json
 {
@@ -378,7 +390,7 @@ GET /api/asistencias/dia/hoy
   }
 ]
 ```
-
+---
 **Ver historial de un socio:**
 
 GET /api/asistencias/socio/1
@@ -454,13 +466,6 @@ Al renovar una membresía vigente, la nueva comienza desde el vencimiento de la 
 
 Todos los endpoints están documentados en Swagger. Usa el token JWT obtenido en login para proteger operaciones de escritura.
 
-### Con xUnit (próximo)
-
-Las pruebas automatizadas cubrirán:
-- Autenticación y autorización
-- CRUD de cada módulo
-- Validaciones de negocio
-- Casos de error (404, 409, 400)
 
 ---
 
@@ -478,6 +483,12 @@ MIT
 ## Próximas Mejoras
 
 - [ ] Pruebas automatizadas (xUnit)
-- [ ] Endpoint de reportes de ingresos por rango de fechas
 - [ ] Notificaciones de membresías próximas a vencer
 
+### xUnit 
+
+Las pruebas automatizadas cubrirán:
+- Autenticación y autorización
+- CRUD de cada módulo
+- Validaciones de negocio
+- Casos de error (404, 409, 400)
