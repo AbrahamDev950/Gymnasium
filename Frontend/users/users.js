@@ -1,256 +1,186 @@
-const UsuariosTarjetaInicioBtn = document.getElementById("UsuariosTarjetaInicioBtn");
-const UsuariosTarjetaPlanesBtn = document.getElementById("UsuariosTarjetaPlanesBtn");
-const UsuariosTarjetaUsuariosConMembresiaBtn = document.getElementById("UsuariosTarjetaUsuariosConMembresiaBtn");
-const UsuariosTarjetaUsuarioRegistroBtn = document.getElementById("UsuariosTarjetaUsuarioRegistroBtn");
-const UsuariosTarjetaVigentesBtn = document.getElementById("UsuariosTarjetaVigentesBtn");
-const UsuariosTarjetaBuscarBtn = document.getElementById("UsuariosTarjetaBuscarBtn");
-const infoUsuariosConMembresia = document.getElementById("infoUsuariosConMembresia");
-const buscadorUsuarios = document.getElementById("buscadorUsuarios");
-const infoMembersiasVigentes = document.getElementById("infoMembersiasVigentes");
-const infoPlanes = document.getElementById("infoPlanes");
-const infoRegistroNuevo = document.getElementById("infoRegistroNuevo");
-
 const API_URL_S = '';
 
-// ----------------   Event Listeners para las tarjetas de navegación ---------------
-mostrarMembresiasVigentes();
-UsuariosTarjetaPlanesBtn.addEventListener("click", () => {
-    if (infoPlanes.style.display === 'none') {
-        infoPlanes.style.display = "block";
-    } else {
-        infoPlanes.style.display = "none";
+// ==========================================
+// 1. UTILIDADES Y MANEJO CENTRALIZADO DE ERRORES
+// ==========================================
+
+// Abstracción para alertas o notificaciones UI
+const notificar = (mensaje, tipo = 'error') => {
+    // Si usas una librería como Toastify/SweetAlert, la cambias aquí centralizadamente:
+    // Toastify({ text: mensaje, className: tipo }).showToast();
+    alert(`${tipo === 'error' ? '❌ Error: ' : '✅ '}${mensaje}`);
+};
+
+// Cliente HTTP centralizado que maneja errores y tokens automáticamente
+async function apiFetch(endpoint, options = {}) {
+    const token = localStorage.getItem('token');
+
+    // Configuración por defecto de headers
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...options.headers
+    };
+
+    try {
+        const response = await fetch(`${API_URL_S}${endpoint}`, {
+            ...options,
+            headers
+        });
+
+        // Caso especial: Sesión expirada o no autorizada
+        if (response.status === 401) {
+            notificar('Sesión expirada o no válida. Inicia sesión nuevamente.');
+            window.location.href = 'index.html';
+            throw new Error('No autorizado');
+        }
+
+        // Si la respuesta no es OK, parseamos el error enviado por el backend
+        if (!response.ok) {
+            let errorMsg = `Error HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.mensaje || errorData.message || errorMsg;
+            } catch (e) {
+                // La respuesta no era JSON
+            }
+            throw new Error(errorMsg);
+        }
+
+        // Retornar JSON si hay contenido, de lo contrario objeto vacío
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+        }
+        return {};
+
+    } catch (error) {
+        // Log técnico en consola para debugging
+        console.error(`[API Error] ${options.method || 'GET'} ${endpoint}:`, error);
+        throw error; // Re-lanzar para que el llamador decida si notificar o no
     }
+}
+
+// ==========================================
+// 2. LÓGICA DE UI Y NAVEGACIÓN
+// ==========================================
+
+const seccionesMap = {
+    UsuariosTarjetaPlanesBtn: 'infoPlanes',
+    UsuariosTarjetaUsuariosConMembresiaBtn: 'infoUsuariosConMembresia',
+    UsuariosTarjetaBuscarBtn: 'buscadorUsuarios',
+    UsuariosTarjetaUsuarioRegistroBtn: 'infoRegistroNuevo',
+    UsuariosTarjetaVigentesBtn: 'infoMembersiasVigentes'
+};
+
+const toggleVisibilidad = (idElemento) => {
+    const el = document.getElementById(idElemento);
+    if (el) {
+        el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+    }
+};
+
+Object.entries(seccionesMap).forEach(([btnId, seccionId]) => {
+    document.getElementById(btnId)?.addEventListener('click', () => toggleVisibilidad(seccionId));
 });
 
-UsuariosTarjetaUsuariosConMembresiaBtn.addEventListener("click", () => {
-    if (infoUsuariosConMembresia.style.display === 'none') {
-        infoUsuariosConMembresia.style.display = "block";
-    } else {
-        infoUsuariosConMembresia.style.display = "none";
-    }
+document.getElementById('UsuariosTarjetaInicioBtn')?.addEventListener('click', () => {
+    window.location.href = 'dashboard.html';
 });
 
-UsuariosTarjetaInicioBtn.addEventListener("click", () => {
-    window.location.href = "dashboard.html";
-});
+// ==========================================
+// 3. FUNCIONES DE NEGOCIO REFACTORIZADAS
+// ==========================================
 
-UsuariosTarjetaBuscarBtn.addEventListener("click", () => {
-    if (buscadorUsuarios.style.display === 'none') {
-        buscadorUsuarios.style.display = "block";
-    } else {
-        buscadorUsuarios.style.display = "none";
-    }
-});
-
-UsuariosTarjetaUsuarioRegistroBtn.addEventListener("click", () => {
-    if (infoRegistroNuevo.style.display === 'none') {
-        infoRegistroNuevo.style.display = "block";
-    } else {
-        infoRegistroNuevo.style.display = "none";
-    }
-})
-
-UsuariosTarjetaVigentesBtn.addEventListener("click", () => {
-    if (infoMembersiasVigentes.style.display === 'none') {
-        infoMembersiasVigentes.style.display = "block";
-    } else {
-        infoMembersiasVigentes.style.display = "none";
-    }
-})
-
-// ------------------- FIN EVENT LISTENERS -------------------
-
-//-------------------   Funciones para mostrar info de acuerdo a la tarjeta de navegacion ---------------
-// async function mostrarInfoUsuariosConMembresia() {
-//     // Acceder al endpoint /api/socios para obtener la información de los usuarios con membresía
-//     try {
-//         const response = await fetch(`${API_URL}/api/socios`, {
-//             method: 'GET',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-//             }
-//         });
-//
-//         if (!response.ok) {
-//             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-//         }
-//
-//         const data = await response.json();
-//         console.log('Usuarios con membresía:', data);
-//         // agregar la información al DOM, por ejemplo, mostrar el total de membresías vigentes
-//         totalMembresiasVigentes.textContent = data.length;
-//     } catch (error) {
-//         console.error('Error al obtener la información de los usuarios con membresía:', error);
-//     }
-// }
-
-// Llamar a la función para mostrar la información al cargar la página
-
-
-// --------------------  Obtener y mostrar planes ----------------------
-
-
-// Crea nuevo plan en la base de datos usando el btn "agregarPlanBtn" y activa el form del html "nuevoPlanForm"
 async function crearNuevoPlan() {
     const agregarPlanBtn = document.getElementById('agregarPlanBtn');
     const crearPlanForm = document.getElementById('crearPlanForm');
+    const nuevoPlanForm = document.getElementById('nuevoPlanForm');
 
-    agregarPlanBtn.addEventListener('click', () => {
-        if (crearPlanForm.style.display === 'none' || crearPlanForm.style.display === '') {
-            crearPlanForm.style.display = 'block';
-        } else {
-            crearPlanForm.style.display = 'none';
-        }
+    agregarPlanBtn?.addEventListener('click', () => {
+        crearPlanForm.style.display = (crearPlanForm.style.display === 'none' || crearPlanForm.style.display === '') ? 'block' : 'none';
     });
 
-    nuevoPlanForm.addEventListener('submit', async (event) => {
+    nuevoPlanForm?.addEventListener('submit', async (event) => {
         event.preventDefault();
-
-        const response = await fetch(`${API_URL_S}/api/planes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-                nombre: document.getElementById('nombrePlan').value,
-                precio: document.getElementById('precioPlan').value,
-                duracion: document.getElementById('duracionPlan').value
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        try {
+            await apiFetch('/api/planes', {
+                method: 'POST',
+                body: JSON.stringify({
+                    nombre: document.getElementById('nombrePlan').value,
+                    precio: document.getElementById('precioPlan').value,
+                    duracion: document.getElementById('duracionPlan').value
+                })
+            });
+            notificar('Plan creado con éxito', 'exito');
+            cargarPlanes();
+        } catch (error) {
+            notificar(error.message);
         }
-
-        const data = await response.json();
-        alert('Plan creado con éxito');
-        cargarPlanes(); // Recargar la lista de planes después de crear uno nuevo
     });
 }
 
-// Asegúrate de llamar a la función cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', crearNuevoPlan);
-
 async function cargarPlanes() {
+    const contenedor = document.getElementById('contenedorPlanes');
     try {
-        const infoPlanes = document.getElementById('infoPlanes');
-        if (infoPlanes.style.display === 'none') {
-            infoPlanes.style.display = 'block';
-        } else {
-            infoPlanes.style.display = 'none';
-        }
-        const response = await fetch(`${API_URL_S}/api/planes`);
+        toggleVisibilidad('infoPlanes');
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const planes = await response.json();
-        const contenedor = document.getElementById('contenedorPlanes');
+        const planes = await apiFetch('/api/planes');
 
         if (!planes || planes.length === 0) {
             contenedor.innerHTML = '<p>No hay planes disponibles</p>';
             return;
         }
 
-        planes.sort((a,b) => Number(a.precio) - Number(b.precio));
+        planes.sort((a, b) => Number(a.precio) - Number(b.precio));
 
         contenedor.innerHTML = planes.map(plan => `
-    <article class="tarjeta-plan">
-        <h3>${plan.nombre}</h3>
-        <p class="id">id: ${plan.id}</p>
-        <p class="precio">$${plan.precio} <span>/mes</span></p>
-        <p class="duracion">Duración: ${plan.duracion} días</p>
-        <button 
-            class="btn-desactivar-plan ${plan.activo ? 'btn-activo' : 'btn-inactivo'}" 
-            data-plan-id="${plan.id}">
-            ${plan.activo ? 'Desactivar' : 'Reactivar'}
-        </button>
-    </article>
-`).join('');
+            <article class="tarjeta-plan">
+                <h3>${plan.nombre}</h3>
+                <p class="id">id: ${plan.id}</p>
+                <p class="precio">$${plan.precio} <span>/mes</span></p>
+                <p class="duracion">Duración: ${plan.duracion} días</p>
+                <button 
+                    class="btn-desactivar-plan ${plan.activo ? 'btn-activo' : 'btn-inactivo'}" 
+                    data-plan-id="${plan.id}">
+                    ${plan.activo ? 'Desactivar' : 'Reactivar'}
+                </button>
+            </article>
+        `).join('');
 
-        // Agregar eventos a los botones
         document.querySelectorAll('.btn-desactivar-plan').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const planId = e.target.dataset.planId;
                 const plan = planes.find(p => p.id == planId);
                 const etiquetaBoton = e.target.textContent.trim();
 
-                // Si la etiqueta del botón es "Desactivar", preguntar si desea desactivar
                 if (etiquetaBoton === 'Desactivar' && confirm(`¿Desactivar el plan "${plan.nombre}"?`)) {
-                    await desactivarPlan(planId);
-                    // await cargarPlanes();
-                }
-                // Obtener la etiqueta del botón y preguntar si desea reactivar
-                else if (etiquetaBoton === 'Reactivar' && confirm(`¿Reactivar el plan "${plan.nombre}"?`)) {
-                    // Color del boton cambia a verde y se muestra un mensaje de confirmación
-                    await reactivarPlan(planId);
-                    // await cargarPlanes();
+                    await cambiarEstadoPlan(planId, 'desactivar');
+                } else if (etiquetaBoton === 'Reactivar' && confirm(`¿Reactivar el plan "${plan.nombre}"?`)) {
+                    await cambiarEstadoPlan(planId, 'reactivar');
                 }
             });
         });
 
     } catch (error) {
-        console.error('Error al cargar planes:', error);
-        document.getElementById('contenedorPlanes').innerHTML =
-            `<p>Error: ${error.message}</p>`;
+        contenedor.innerHTML = `<p class="error">Error al cargar planes: ${error.message}</p>`;
     }
 }
-async function reactivarPlan(planId) {
+
+// Unificación de reactivarPlan y desactivarPlan
+async function cambiarEstadoPlan(planId, accion) {
     try {
-        const response = await fetch(`${API_URL_S}/api/planes/${planId}/reactivar`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            alert(`Error: ${error.mensaje}`);
-            return;
-        }
-
-        const data = await response.json();
-        alert(data.mensaje);
+        const data = await apiFetch(`/api/planes/${planId}/${accion}`, { method: 'PATCH' });
+        notificar(data.mensaje || `Plan ${accion}do exitosamente`, 'exito');
+        cargarPlanes();
     } catch (error) {
-        console.error('Error al reactivar plan:', error);
-        alert('Error al reactivar el plan');
+        notificar(error.message);
     }
 }
-async function desactivarPlan(planId) {
-    try {
-        const response = await fetch(`${API_URL_S}/api/planes/${planId}/desactivar`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
 
-        if (!response.ok) {
-            const error = await response.json();
-            alert(`Error: ${error.mensaje}`);
-            return;
-        }
-
-        const data = await response.json();
-        alert(data.mensaje);
-    } catch (error) {
-        console.error('Error al desactivar plan:', error);
-        alert('Error al desactivar el plan');
-    }
-}
-// Se encarga de registrar un nuevo socio al enviar el formulario
-document.getElementById('socioForm').addEventListener('submit', async function(event) {
+// Registro de Socio
+document.getElementById('socioForm')?.addEventListener('submit', async function(event) {
     event.preventDefault();
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert('No se encontró token de autenticación. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html';
-        return;
-    }
 
     const crearSocioDto = {
         nombre: document.getElementById('nombre').value.trim(),
@@ -259,211 +189,109 @@ document.getElementById('socioForm').addEventListener('submit', async function(e
         telefono: document.getElementById('telefono').value.trim(),
     };
 
-    console.log("Socio DTO a enviar:", crearSocioDto);
-
     try {
-        const response = await fetch(`${API_URL_S}/api/socios`, {
+        await apiFetch('/api/socios', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
             body: JSON.stringify(crearSocioDto)
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('Socio registrado:', data);
-        alert('Socio registrado con éxito');
+        notificar('Socio registrado con éxito', 'exito');
         document.getElementById('socioForm').reset();
-        infoRegistroNuevo.style.display = 'none'; // Ocultar el formulario después del éxito
-
+        document.getElementById('infoRegistroNuevo').style.display = 'none';
     } catch (error) {
-        console.error('Error al registrar el socio:', error);
-        alert(`Error: ${error.message}`);
+        notificar(`Error al registrar el socio: ${error.message}`);
     }
 });
 
-document.addEventListener('DOMContentLoaded', cargarPlanes);
-
-// Asignar membresia a un socio existente
-document.getElementById('membresiaForm').addEventListener('submit', async function(event) {
+// Asignar Membresía
+document.getElementById('membresiaForm')?.addEventListener('submit', async function(event) {
     event.preventDefault();
-    
-    const mensajeConfirmacion = `¿Estás seguro de que los datos son correctos?\n\n- ID del Plan: ${document.getElementById('planIdM').value.trim()}\n- ID del Socio: ${document.getElementById('socioIdM').value.trim()}`;
-    const usuarioConfirmo = confirm(mensajeConfirmacion);
 
-    if (!usuarioConfirmo) {
+    const planId = document.getElementById('planIdM').value.trim();
+    const socioId = document.getElementById('socioIdM').value.trim();
+
+    if (!confirm(`¿Estás seguro de que los datos son correctos?\n\n- ID del Plan: ${planId}\n- ID del Socio: ${socioId}`)) {
         return;
-    }    
-    
-    // Llamada a la API para asignar una membresía
-    // Ruta: api/membresias
-    
-    // recibe socioId y planId
-    const asignarMembresiaDto = {
-        planId: parseInt(document.getElementById('planIdM').value.trim(), 10),
-        socioId: parseInt(document.getElementById('socioIdM').value.trim(), 10)
-    };
-
-    console.log("Asignar Membresía DTO a enviar:", asignarMembresiaDto);
+    }
 
     try {
-        const response = await fetch(`${API_URL_S}/api/membresias`, {
+        const data = await apiFetch('/api/membresias', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(asignarMembresiaDto)
+            body: JSON.stringify({
+                planId: parseInt(planId, 10),
+                socioId: parseInt(socioId, 10)
+            })
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('Membresía asignada:', data);
-        alert('Membresía asignada con éxito al usuario: ' + data.socioId);
+        notificar(`Membresía asignada con éxito al usuario: ${data.socioId || socioId}`, 'exito');
         document.getElementById('membresiaForm').reset();
-        infoUsuariosConMembresia.style.display = 'none'; // Ocultar el formulario después del éxito
-
+        document.getElementById('infoUsuariosConMembresia').style.display = 'none';
     } catch (error) {
-        console.error('Error al asignar membresía:', error);
-        alert(`Error al registrar la membresía, revise que el ID del socio y el ID del plan sean correctos.`);
+        notificar('Error al registrar la membresía. Verifique que el ID del socio y del plan sean correctos.');
     }
 });
 
-// Registrar visita de socio
-document.getElementById('visitaForm').addEventListener('submit', async function(event) {
+// Registrar Visita
+document.getElementById('visitaForm')?.addEventListener('submit', async function(event) {
     event.preventDefault();
     const socioId = parseInt(document.getElementById('socioIdVisita').value.trim(), 10);
-    
-    // Crear el objeto DTO AsistenciaRequest para registrar la visita
-    const registrarVisitaDto = {
-        socioId: socioId
-    };
-    
+
     try {
-        const response = await fetch(`${API_URL_S}/api/asistencias`, {
+        await apiFetch('/api/asistencias', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(registrarVisitaDto)
+            body: JSON.stringify({ socioId })
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        alert('Visita registrada con éxito');
+        notificar('Visita registrada con éxito', 'exito');
         document.getElementById('visitaForm').reset();
     } catch (error) {
-        alert(`Error al registrar la visita, revise que el ID del socio sea correcto y que tenga una membresía vigente.`);
+        notificar('Error al registrar la visita. Verifique que el ID del socio sea correcto y tenga membresía vigente.');
     }
 });
 
-// Mostrar las membresías vigentes en la tarjeta correspondiente en totalMembresiasVigentes
+// Métricas Dashboard
 async function mostrarMembresiasVigentes() {
     try {
-        const response = await fetch(`${API_URL_S}/api/dashboard`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        const data = await response.json();
-        // Parsear el total de membresías vigentes y mostrarlo en el DOM
+        const data = await apiFetch('/api/dashboard');
         const total = parseInt(data.membresíasVigentes ?? 0, 10);
-        // Mostrar el total de membresías vigentes en el DOM
         document.getElementById('totalMembresiasVigentes').textContent = total;
-        // console.log ('Total de membresías vigentes:', data.totalMembresiasVigentes);
     } catch (error) {
         console.error('Error al obtener las membresías vigentes:', error);
     }
 }
 
-// Buscar socio por nombre, apellido o correo 
-document.getElementById('buscarForm').addEventListener('submit', async function(event) {
+// Búsqueda de Socios
+document.getElementById('buscarForm')?.addEventListener('submit', async function(event) {
     event.preventDefault();
 
     const botonBuscar = document.getElementById('buscarBtn');
-
     if (botonBuscar.disabled) return;
+
+    const query = document.getElementById('buscador').value.trim();
+    if (!query) {
+        notificar('Por favor ingresa un término válido de búsqueda');
+        return;
+    }
 
     botonBuscar.disabled = true;
     const textoOriginal = botonBuscar.textContent;
     botonBuscar.textContent = 'Buscando...';
 
-    const query = document.getElementById('buscador').value.trim();
-
-    if (!query) {
-        alert('Por favor ingresa un término válido de búsqueda');
-        botonBuscar.disabled = false;
-        botonBuscar.textContent = textoOriginal;
-        return;
-    }
-
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('No hay un token de sesión disponible. Por favor, inicia sesión.');
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const response = await fetch(`${API_URL_S}/api/socios/buscar?termino=${encodeURIComponent(query)}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        // Extraer detalles exactos si la respuesta falla
-        if (!response.ok) {
-            let mensajeError = `Error HTTP ${response.status}: ${response.statusText}`;
-            try {
-                const errorData = await response.json();
-                if (errorData && (errorData.mensaje || errorData.message)) {
-                    mensajeError = errorData.mensaje || errorData.message;
-                }
-            } catch (e) {
-                // Si la respuesta no es un objeto JSON legible
-            }
-            throw new Error(mensajeError);
-        }
-
-        const socios = await response.json();
+        const socios = await apiFetch(`/api/socios/buscar?termino=${encodeURIComponent(query)}`);
         mostrarResultadosEnTabla(socios);
-
     } catch (error) {
-        console.error('Error al buscar:', error);
-        alert(`No se pudo realizar la búsqueda: ${error.message}`);
+        notificar(`No se pudo realizar la búsqueda: ${error.message}`);
     } finally {
         botonBuscar.disabled = false;
         botonBuscar.textContent = textoOriginal;
     }
 });
 
-// Función para mostrar resultados en la tabla
 function mostrarResultadosEnTabla(socios) {
     const tablaCuerpo = document.getElementById('tablaCuerpo');
     const tabla = document.getElementById('miembros-totales');
 
     tablaCuerpo.innerHTML = '';
 
-    if (socios.length === 0) {
+    if (!socios || socios.length === 0) {
         tablaCuerpo.innerHTML = '<tr><td colspan="4" style="text-align: center;">No se encontraron resultados</td></tr>';
         tabla.style.display = 'table';
         return;
@@ -471,15 +299,14 @@ function mostrarResultadosEnTabla(socios) {
 
     socios.forEach(socio => {
         const fila = document.createElement('tr');
-
         const estado = socio.activo ?
             '<span class="estado-activo">✓ Activo</span>' :
             '<span class="estado-inactivo">✗ Inactivo</span>';
-        
+
         const acciones = `
             <div class="acciones-btn">
                 <button onclick="editarSocio(${socio.id})" class="btn-editar">Editar</button>
-                <button onclick="toggleEstadoSocio(${socio.id}, ${socio.activo}, this)" 
+                <button onclick="toggleEstadoSocio(event, ${socio.id}, ${socio.activo})" 
                         class="btn-${socio.activo ? 'desactivar' : 'activar'}">
                     ${socio.activo ? 'Desactivar' : 'Activar'}
                 </button>
@@ -503,70 +330,57 @@ function mostrarResultadosEnTabla(socios) {
     tabla.style.display = 'table';
 }
 
-// Función para desactivar/activar socio
-async function toggleEstadoSocio(id, estaActivo) {
+// Activar / Desactivar Socio
+async function toggleEstadoSocio(evt, id, estaActivo) {
     const endpoint = estaActivo ? 'desactivar' : 'activar';
     const accion = estaActivo ? 'desactiva' : 'activa';
-    
-    // Confimar con el usuario antes de hacer la petición
-    const confirmacion = confirm(`¿Estás seguro de que deseas ${accion} al socio con ID ${id}?`);
 
-    if (!confirmacion) {
+    if (!confirm(`¿Estás seguro de que deseas ${accion}r al socio con ID ${id}?`)) {
         return;
     }
 
+    const boton = evt.target;
+    boton.disabled = true;
+    const textoOriginal = boton.textContent;
+    boton.textContent = 'Procesando...';
+
     try {
-        const boton = event.target; // Obtener el botón que fue clickeado
-        boton.disabled = true;
-        boton.style.opacity = '0.6';
-        boton.style.cursor = 'not-allowed';
-        const textoOriginal = boton.textContent;
-        boton.textContent = 'Procesando...';
-        const response = await fetch(`${API_URL_S}/api/socios/${id}/${endpoint}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                throw new Error('Socio no encontrado.');
-            } else if (response.status === 400) {
-                const errorData = await response.json();
-                throw new Error(errorData.mensaje || 'Error al cambiar el estado.');
-            } else {
-                throw new Error(`Error HTTP ${response.status}`);
-            }
-        }
-
-        alert(`Socio ${accion}do exitosamente`);
+        await apiFetch(`/api/socios/${id}/${endpoint}`, { method: 'PATCH' });
+        notificar(`Socio ${accion}do exitosamente`, 'exito');
         document.getElementById('buscarForm').dispatchEvent(new Event('submit'));
-
     } catch (error) {
-        console.error('Error:', error);
-        alert(`Error: ${error.message}`);
-
+        notificar(error.message);
     } finally {
-        // ✅ Reactivar el botón (se ejecuta siempre, éxito o error)
         boton.disabled = false;
-        boton.style.opacity = '1';
-        boton.style.cursor = 'pointer';
         boton.textContent = textoOriginal;
     }
 }
-    // Funcion para despues editar a los socios
+
 function editarSocio(id) {
     alert(`Editar socio ${id}`);
 }
 
-
 function verificarAutenticacionEstricta() {
-    AuthUtils.verifySession();
+    if (typeof AuthUtils !== 'undefined') {
+        AuthUtils.verifySession();
+    }
 }
-window.addEventListener('pageshow', () => {
+
+// ==========================================
+// 4. INICIALIZACIÓN
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    crearNuevoPlan();
+    cargarPlanes();
+    mostrarMembresiasVigentes();
     verificarAutenticacionEstricta();
 });
 
-verificarAutenticacionEstricta();
+window.addEventListener('pageshow', verificarAutenticacionEstricta);
+
+// Logout
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn.addEventListener('click', () => {
+    AuthUtils.logout();
+});
