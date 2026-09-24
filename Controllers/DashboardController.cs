@@ -1,3 +1,4 @@
+using Gym.Controllers.Services;
 using Gym.Datos;
 using Gym.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -20,16 +21,11 @@ public class DashboardController : ControllerBase
 
     // GET /api/dashboard
     [HttpGet]
-    public async Task<ActionResult<DashboardResponse>> ObtenerResumenDashboard()
+    public async Task<ActionResult<DashboardResponse>> ObtenerResumenDashboard(IAsistenciaService asistenciaService)
     {
-        var hoy = DateTime.UtcNow.Date;
         var inicioMes = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
         var finMes = inicioMes.AddMonths(1);
-
-        // Asistencias de hoy
-        var asistenciasHoy = await _context.Asistencias
-            .AsNoTracking()
-            .CountAsync(a => a.FechaHoraEntrada >= hoy && a.FechaHoraEntrada < hoy.AddDays(1));
+        
 
         // Membresías vigentes
         var ahora = DateTime.UtcNow;
@@ -61,7 +57,7 @@ public class DashboardController : ControllerBase
 
         var respuesta = new DashboardResponse
         {
-            AsistenciasHoy = asistenciasHoy,
+            AsistenciasHoy = asistenciaService.ObtenerAsistenciasDelDia().Result?.Count() ?? 0,
             MembresíasVigentes = membresíasVigentes,
             MembresíasProximasAVencer = membresíasProximasAVencer,
             SociosActivos = sociosActivos,

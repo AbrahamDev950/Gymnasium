@@ -22,12 +22,12 @@ public class AsistenciasController : ControllerBase
 
     // POST /api/asistencias
     [HttpPost]
-    public async Task<ActionResult<AsistenciaResponse?>> RegistrarAsistencia([FromBody] AsistenciaRequest request)
+    public async Task<ActionResult<AsistenciaResponse?>> RegistrarAsistencia([FromBody] int id)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var respuesta = await _asistenciaService.RegistrarAsistencia(request);
+        var respuesta = await _asistenciaService.RegistrarAsistencia(id);
 
         if (respuesta == null)
         {

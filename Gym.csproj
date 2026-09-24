@@ -20,6 +20,7 @@
 
     <ItemGroup>
       <Folder Include="Application\" />
+      <Folder Include="Application\Features\Socio\Services\" />
       <Folder Include="Application\Features\Token\" />
     </ItemGroup>
 
