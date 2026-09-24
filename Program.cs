@@ -39,6 +39,8 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 
 // Servicio de TokenService para generar tokens JWT
 builder.Services.AddScoped<TokenService>();
+// Servicio para manejar el login y la autenticación
+builder.Services.AddScoped<ILoginService, LoginService>();
 
 // Configurar la autenticación JWT
 builder.Services

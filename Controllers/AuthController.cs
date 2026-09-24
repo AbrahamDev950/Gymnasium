@@ -8,63 +8,40 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Controllers;
-
+/// <summary>
+/// Controlador para manejar la autenticación de usuarios.
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly ApplicationDBContext context;
-    private readonly TokenService tokenService;
+    /// <summary>
+    /// Servicio para manejar el login y la autenticación.
+    /// </summary>
+    private readonly ILoginService loginService;
 
-    public AuthController(ApplicationDBContext context, TokenService tokenService)
+    public AuthController(ILoginService loginService)
     {
-        this.context = context;
-        this.tokenService = tokenService;
+        this.loginService = loginService;
     }
 
+    /// <summary>
+    /// Inicia sesión en la aplicación y obtiene un token JWT.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequest request)
+    [AllowAnonymous]
+    [EndpointDescription("Inicia sesión en la aplicación y obtiene un token JWT.")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var administrador = await context.Administradores
-            .SingleOrDefaultAsync(administrador =>
-                administrador.NombreUsuario == request.NombreUsuario);
+        var respuesta = await loginService.LoginAsync(request);
 
-        if (administrador is null)
+        if (respuesta is null)
         {
-            return Unauthorized(new
-            {
-                mensaje = "Datos incorrectos."
-            });
+            return Unauthorized(new { message = "Nombre de usuario o contraseña incorrectos." });
         }
 
-        var passwordHasher = new PasswordHasher<Entidades.Administrador>();
-
-        var resultado = passwordHasher.VerifyHashedPassword(
-            administrador,
-            administrador.PasswordHash,
-            request.Password
-        );
-
-        if (resultado == PasswordVerificationResult.Failed)
-        {
-            return Unauthorized(new
-            {
-                mensaje = "Datos incorrectos."
-            });
-        }
-        
-        // Si los datos son correctos generamos el token JWT
-        var token = tokenService.GenerarToken(administrador);
-        return Ok(new
-        {
-            token,
-            expirationMinutes = 60,
-            administrador = new
-            {
-                mensaje = "Credenciales correctas y token generado.", 
-                administrador.Id,
-                administrador.NombreUsuario
-            }
-        });
+        return Ok(respuesta);
     }
 }
