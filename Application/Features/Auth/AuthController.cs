@@ -18,11 +18,11 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Servicio para manejar el login y la autenticación.
     /// </summary>
-    private readonly ILoginService loginService;
+    private readonly ILoginService _loginService;
 
     public AuthController(ILoginService loginService)
     {
-        this.loginService = loginService;
+        this._loginService = loginService;
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class AuthController : ControllerBase
     [EndpointDescription("Inicia sesión en la aplicación y obtiene un token JWT.")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var respuesta = await loginService.LoginAsync(request);
+        var respuesta = await _loginService.LoginAsync(request);
 
         if (respuesta is null)
         {
