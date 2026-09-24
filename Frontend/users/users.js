@@ -237,6 +237,7 @@ document.getElementById('visitaForm')?.addEventListener('submit', async function
     try {
         await apiFetch('/api/asistencias', {
             method: 'POST',
+            // Enviar solo el id del socio para registrar la visita
             body: JSON.stringify({ socioId })
         });
         notificar('Visita registrada con éxito', 'exito');

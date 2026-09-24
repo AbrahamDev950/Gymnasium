@@ -2,6 +2,7 @@ using Gym.Datos;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Gym.Application.Features.Asistencia.Services;
+using Gym.Application.Features.Socio.Services;
 using Gym.Servicios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
@@ -44,6 +45,8 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 // Servicio para asistencias
 builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
+// Servicio para registro de socios
+builder.Services.AddScoped<ISocioRegistro, SocioRegistro>();
 
 
 // Configurar la autenticación JWT
