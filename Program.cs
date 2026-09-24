@@ -2,7 +2,9 @@ using Gym.Datos;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Gym.Application.Features.Asistencia.Services;
+using Gym.Application.Features.Planes.Services;
 using Gym.Application.Features.Socio.Services;
+using Gym.Controllers.Services;
 using Gym.Servicios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
@@ -47,7 +49,8 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
 // Servicio para registro de socios
 builder.Services.AddScoped<ISocioRegistro, SocioRegistro>();
-
+// Servicio para manejar planes
+builder.Services.AddScoped<IPlanService, PlanService>();
 
 // Configurar la autenticación JWT
 builder.Services
