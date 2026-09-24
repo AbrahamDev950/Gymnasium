@@ -1,4 +1,4 @@
-using Gym.Controllers.Services;
+using Gym.Application.Features.Asistencia.Services;
 using Gym.Datos;
 using Gym.DTOs;
 using Microsoft.AspNetCore.Authorization;

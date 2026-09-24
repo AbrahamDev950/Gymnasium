@@ -2,7 +2,6 @@ using Gym.Datos;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Gym.Application.Features.Asistencia.Services;
-using Gym.Controllers.Services;
 using Gym.Servicios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
