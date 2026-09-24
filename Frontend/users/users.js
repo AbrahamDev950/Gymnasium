@@ -15,10 +15,9 @@ const notificar = (mensaje, tipo = 'error') => {
 async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem('token');
 
-    // Configuración por defecto de headers
     const headers = {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...(token ? {'Authorization': `Bearer ${token}`} : {}),
         ...options.headers
     };
 
@@ -28,36 +27,45 @@ async function apiFetch(endpoint, options = {}) {
             headers
         });
 
-        // Caso especial: Sesión expirada o no autorizada
+        // Caso especial: Sesión expirada
         if (response.status === 401) {
             notificar('Sesión expirada o no válida. Inicia sesión nuevamente.');
             window.location.href = 'index.html';
             throw new Error('No autorizado');
         }
 
-        // Si la respuesta no es OK, parseamos el error enviado por el backend
+        // Leer el cuerpo de la respuesta según el tipo de contenido
+        let body;
+        const contentType = response.headers.get('content-type');
+
+        if (contentType && contentType.includes('application/json')) {
+            body = await response.json();
+        } else {
+            body = await response.text();
+        }
+
+        // Si la respuesta NO es OK, extraer el error
         if (!response.ok) {
             let errorMsg = `Error HTTP ${response.status}: ${response.statusText}`;
-            try {
-                const errorData = await response.json();
-                errorMsg = errorData.mensaje || errorData.message || errorMsg;
-            } catch (e) {
-                // La respuesta no era JSON
+
+            // Si el body es un objeto con mensaje
+            if (typeof body === 'object' && body !== null) {
+                errorMsg = body.mensaje || body.message || errorMsg;
             }
+            // Si es string/HTML, usar como está
+            else if (typeof body === 'string') {
+                errorMsg = body.substring(0, 200); // Limitar a 200 caracteres
+            }
+
             throw new Error(errorMsg);
         }
 
-        // Retornar JSON si hay contenido, de lo contrario objeto vacío
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return await response.json();
-        }
-        return {};
+        // Si es OK, retornar el body
+        return body || {};
 
     } catch (error) {
-        // Log técnico en consola para debugging
         console.error(`[API Error] ${options.method || 'GET'} ${endpoint}:`, error);
-        throw error; // Re-lanzar para que el llamador decida si notificar o no
+        throw error;
     }
 }
 
@@ -217,15 +225,15 @@ document.getElementById('membresiaForm')?.addEventListener('submit', async funct
         const data = await apiFetch('/api/membresias', {
             method: 'POST',
             body: JSON.stringify({
-                planId: parseInt(planId, 10),
-                socioId: parseInt(socioId, 10)
+                planId: (planId),
+                socioId: (socioId)
             })
         });
         notificar(`Membresía asignada con éxito al usuario: ${data.socioId || socioId}`, 'exito');
         document.getElementById('membresiaForm').reset();
         document.getElementById('infoUsuariosConMembresia').style.display = 'none';
     } catch (error) {
-        notificar('Error al registrar la membresía. Verifique que el ID del socio y del plan sean correctos.');
+        notificar(`Error al asignar la membresía: ${error.message}`);
     }
 });
 
@@ -243,7 +251,7 @@ document.getElementById('visitaForm')?.addEventListener('submit', async function
         notificar('Visita registrada con éxito', 'exito');
         document.getElementById('visitaForm').reset();
     } catch (error) {
-        notificar('Error al registrar la visita. Verifique que el ID del socio sea correcto y tenga membresía vigente.');
+        notificar(`Error al registrar la visita: ${error.message}`);
     }
 });
 

@@ -19,8 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Application\" />
-      <Folder Include="Application\Features\Membresia\Services\" />
       <Folder Include="Application\Features\Token\" />
     </ItemGroup>
 

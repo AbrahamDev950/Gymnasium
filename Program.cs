@@ -2,9 +2,11 @@ using Gym.Datos;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Gym.Application.Features.Asistencia.Services;
+using Gym.Application.Features.Membresia.Services;
 using Gym.Application.Features.Planes.Services;
 using Gym.Application.Features.Socio.Services;
 using Gym.Controllers.Services;
+using Gym.Middleware;
 using Gym.Servicios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
@@ -51,6 +53,8 @@ builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
 builder.Services.AddScoped<ISocioRegistro, SocioRegistro>();
 // Servicio para manejar planes
 builder.Services.AddScoped<IPlanService, PlanService>();
+// Servicio para manejar membresías
+builder.Services.AddScoped<IMembresiaService, MembresiaService>();
 
 // Configurar la autenticación JWT
 builder.Services
@@ -117,6 +121,8 @@ builder.Services.AddCors(options =>
 
 // ################### INICIO DEL PIPELINE DE LA APLICACIÓN ###################
 var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 
 // Aplicar migraciones automáticamente
 using (var scope = app.Services.CreateScope())
@@ -168,6 +174,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
     // En Docker, solo usar HTTP
     builder.WebHost.UseUrls("http://+:5000");
 }
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 
