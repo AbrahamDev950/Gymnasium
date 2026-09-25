@@ -1,0 +1,30 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Gym.Migrations
+{
+    /// <inheritdoc />
+    public partial class AutorFoto : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(
+                name: "FotoPerfil",
+                table: "Socios",
+                type: "varchar(max)",
+                unicode: false,
+                nullable: false,
+                defaultValue: "");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "FotoPerfil",
+                table: "Socios");
+        }
+    }
+}

@@ -20,7 +20,7 @@ public class SociosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Post(CrearSocioRequest request)
+    public async Task<ActionResult> Post([FromForm] CrearSocioRequest request)
     {
         var socio = await _socioRegistro.RegistrarSocio(request);
         return CreatedAtAction(

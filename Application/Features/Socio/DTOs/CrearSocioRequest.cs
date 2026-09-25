@@ -36,4 +36,6 @@ public class CrearSocioRequest
     )]
     [StringLength(10), MinLength(10, ErrorMessage = "El campo {0} debe tener exactamente 10 dígitos.")]
     public required string Telefono { get; set; }
+    
+    public IFormFile? FotoPerfil { get; set; } 
 }

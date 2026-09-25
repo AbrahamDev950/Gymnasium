@@ -20,6 +20,7 @@
 
     <ItemGroup>
       <Folder Include="Application\Features\Token\" />
+      <Folder Include="wwwroot\socios\" />
     </ItemGroup>
 
 </Project>

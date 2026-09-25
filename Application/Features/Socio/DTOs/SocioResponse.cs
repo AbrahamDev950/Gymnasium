@@ -18,4 +18,5 @@ public class SocioResponse
     public DateTime FechaIngreso { get; set; }
     
     public bool Activo { get; set; }
+    public string FotoPerfil { get; set; } = string.Empty;
 }

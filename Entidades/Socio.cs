@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gym.Entidades;
 
@@ -29,4 +30,7 @@ public class Socio
     public required DateTime FechaIngreso { get; set; } = DateTime.UtcNow;
     
     public bool Activo { get; set; } = true;
+    
+    [Unicode(false)]
+    public string FotoPerfil { get; set; } = string.Empty;
 }

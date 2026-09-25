@@ -1,5 +1,4 @@
 const API_URL_S = '';
-
 // ==========================================
 // 1. UTILIDADES Y MANEJO CENTRALIZADO DE ERRORES
 // ==========================================
@@ -295,23 +294,26 @@ document.getElementById('buscarForm')?.addEventListener('submit', async function
 });
 
 function mostrarResultadosEnTabla(socios) {
+    console.log('Socios encontrados:', socios);
+    console.log('Cantidad de socios:', socios.length);
     const tablaCuerpo = document.getElementById('tablaCuerpo');
     const tabla = document.getElementById('miembros-totales');
 
     tablaCuerpo.innerHTML = '';
 
     if (!socios || socios.length === 0) {
-        tablaCuerpo.innerHTML = '<tr><td colspan="4" style="text-align: center;">No se encontraron resultados</td></tr>';
+        tablaCuerpo.innerHTML = '<tr><td colspan="5" style="text-align: center;">No se encontraron resultados</td></tr>';
         tabla.style.display = 'table';
         return;
     }
 
     socios.forEach(socio => {
         const fila = document.createElement('tr');
+        // Si el usuario no tiene foto de perfil, indicar un texto diciendo que no hay foto de perfil
+        const fotoPerfil = socio.fotoPerfil || '/avatarDefault.png';
         const estado = socio.activo ?
             '<span class="estado-activo">✓ Activo</span>' :
             '<span class="estado-inactivo">✗ Inactivo</span>';
-
         const acciones = `
             <div class="acciones-btn">
                 <button onclick="editarSocio(${socio.id})" class="btn-editar">Editar</button>
@@ -324,6 +326,9 @@ function mostrarResultadosEnTabla(socios) {
 
         fila.innerHTML = `
             <td>${socio.id}</td>
+            <td>
+                <img src="${fotoPerfil}" alt="Foto de ${socio.nombre}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 20%;">
+            </td>
             <td>
                 <strong>${socio.nombre} ${socio.apellido}</strong><br>
                 <small>${socio.email}</small><br>
@@ -367,6 +372,8 @@ async function toggleEstadoSocio(evt, id, estaActivo) {
 
 function editarSocio(id) {
     alert(`Editar socio ${id}`);
+    // Obtener los datos del socio y mostrar un formulario de edición
+    
 }
 
 function verificarAutenticacionEstricta() {

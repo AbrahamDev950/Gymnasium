@@ -7,10 +7,12 @@ namespace Gym.Application.Features.Socio.Services;
 public class SocioRegistro : ISocioRegistro
 {
     private readonly ApplicationDBContext _context;
+    private readonly IAlmacenadorArchivos _almacenadorArchivos;
 
-    public SocioRegistro(ApplicationDBContext context)
+    public SocioRegistro(ApplicationDBContext context, IAlmacenadorArchivos almacenadorArchivos)
     {
         _context = context;
+        _almacenadorArchivos = almacenadorArchivos;
     }
 
     public async Task<SocioResponse?> RegistrarSocio(CrearSocioRequest request)
@@ -25,14 +27,18 @@ public class SocioRegistro : ISocioRegistro
         {
             throw new InvalidOperationException("Este correo electrónico ya está registrado.");
         }
+        
 
         var socio = new Entidades.Socio
         {
             Nombre = request.Nombre.Trim(),
             Apellido = request.Apellido.Trim(),
             Email = emailSanitizado,
-            Telefono = request.Telefono.Trim(),
-            // La asignación se realiza automáticamente en el constructor de la entidad Socio
+            Telefono = request.Telefono.Trim(), 
+            // Guardar la foto de perfil si se proporciona, de lo contrario, establecer como cadena vacía
+            FotoPerfil = request.FotoPerfil != null
+                ? await _almacenadorArchivos.Almacenar("socios", request.FotoPerfil)
+                : string.Empty,
             FechaIngreso = DateTime.UtcNow,
         };
 
@@ -47,6 +53,7 @@ public class SocioRegistro : ISocioRegistro
             Email = socio.Email,
             Telefono = socio.Telefono,
             FechaIngreso = socio.FechaIngreso,
+            FotoPerfil = socio.FotoPerfil,
             Activo = socio.Activo
         };
 
@@ -66,6 +73,7 @@ public class SocioRegistro : ISocioRegistro
                 Email = socio.Email,
                 Telefono = socio.Telefono,
                 FechaIngreso = socio.FechaIngreso,
+                FotoPerfil = socio.FotoPerfil,
                 Activo = socio.Activo
             })
             .ToListAsync();
@@ -96,6 +104,7 @@ public class SocioRegistro : ISocioRegistro
                 Email = socio.Email,
                 Telefono = socio.Telefono,
                 FechaIngreso = socio.FechaIngreso,
+                FotoPerfil = socio.FotoPerfil,
                 Activo = socio.Activo
             })
             .ToListAsync();
@@ -116,6 +125,7 @@ public class SocioRegistro : ISocioRegistro
                 Email = socio.Email,
                 Telefono = socio.Telefono,
                 FechaIngreso = socio.FechaIngreso,
+                FotoPerfil = socio.FotoPerfil,
                 Activo = socio.Activo
             })
             .FirstOrDefaultAsync();
@@ -158,6 +168,18 @@ public class SocioRegistro : ISocioRegistro
         {
             throw new InvalidOperationException(
                 "No se puede cambiar el estado del socio. El estado actual es el mismo que el solicitado.");
+        }
+        if(socioExistente.FotoPerfil != null && request.FotoPerfil != null)
+        {
+            // Eliminar la foto de perfil anterior si existe
+            await _almacenadorArchivos.BorrarArchivoAsync(socioExistente.FotoPerfil, "socios");
+            // Guardar la nueva foto de perfil
+            socioExistente.FotoPerfil = await _almacenadorArchivos.Almacenar("socios", request.FotoPerfil);
+        }
+        else if (request.FotoPerfil != null)
+        {
+            // Guardar la nueva foto de perfil si no había una anterior
+            socioExistente.FotoPerfil = await _almacenadorArchivos.Almacenar("socios", request.FotoPerfil);
         }
 
         socioExistente.Nombre = request.Nombre.Trim();

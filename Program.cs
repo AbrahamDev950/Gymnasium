@@ -1,6 +1,7 @@
 using Gym.Datos;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using Gym.Application.Features.Almacenamiento;
 using Gym.Application.Features.Asistencia.Services;
 using Gym.Application.Features.Membresia.Services;
 using Gym.Application.Features.Planes.Services;
@@ -55,6 +56,9 @@ builder.Services.AddScoped<ISocioRegistro, SocioRegistro>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 // Servicio para manejar membresías
 builder.Services.AddScoped<IMembresiaService, MembresiaService>();
+// Servicio para guardar archivos (como fotos de perfil)
+builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
+builder.Services.AddHttpContextAccessor();
 
 // Configurar la autenticación JWT
 builder.Services
@@ -138,6 +142,7 @@ app.UseDefaultFiles(new DefaultFilesOptions
     )
 });
 
+app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
