@@ -74,6 +74,7 @@ ScaffoldingReadMe.txt
 # ASP.NET Core AppSettings per environment
 appsettings.Production.json
 appsettings.Development.json
+user-secrets.json
 
 # StyleCop
 StyleCopReport.xml
